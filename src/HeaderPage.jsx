@@ -1,6 +1,5 @@
 import React from "react";
 import { Bell, Menu, Search, User } from "lucide-react";
-import { useState } from "react";
 const HeaderPage = ({ setSidebarOpen, activeTab }) => {
   return (
     <header className="bg-white shadow-md">

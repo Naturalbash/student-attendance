@@ -1,15 +1,49 @@
-import React from 'react';
-import { Download } from 'lucide-react';
+import { Download } from "lucide-react";
+
+const students = [
+  {
+    id: 1,
+    name: "Mark Henry",
+    email: "mark@gmail.com",
+    course: "Website Development Application",
+    status: "Active",
+    attendance: "92%",
+  },
+  {
+    id: 2,
+    name: "Joshua Timothy",
+    email: "tom@gmail.com",
+    course: "Cyber Security",
+    status: "Inactive",
+    attendance: "62%",
+  },
+  {
+    id: 3,
+    name: "Hanafi Taofik",
+    email: "taofik1$@gmail.com",
+    course: "Graphics Design",
+    status: "Active",
+    attendance: "84%",
+  },
+  {
+    id: 4,
+    name: "Yusuf Maimunah",
+    email: "maimu32@gmail.com",
+    course: "Website Development Application",
+    status: "active",
+    attendance: "80%",
+  },
+  {
+    id: 5,
+    name: "Tom Brown",
+    email: "brown1@outlook.com",
+    course: "Graphics Design",
+    status: "Active",
+    attendance: "83%",
+  },
+];
 
 const AttendancePage = () => {
-  const students = [
-    { id: 1, name: 'Mark Henry', email: 'mark@gmail.com', course: 'Website Development Application', status: 'Active', attendance: '92%' },
-    { id: 2, name: 'Joshua Timothy', email: 'tom@gmail.com', course: 'Cyber Security', status: 'Inactive', attendance: '62%' },
-    { id: 3, name: 'Hanafi Taofik', email: 'taofik1$@gmail.com', course: 'Graphics Design', status: 'Active', attendance: '84%' },
-    { id: 4, name: 'Yusuf Maimunah', email: 'maimu32@gmail.com', course: 'Website Development Application', status: 'active', attendance: '80%' },
-    { id: 5, name: 'Tom Brown', email: 'brown1@outlook.com', course: 'Graphics Design', status: 'Active', attendance: '83%' }
-  ];
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -27,8 +61,8 @@ const AttendancePage = () => {
 
       <div className="bg-white p-6 rounded-lg shadow-md">
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <input 
-            type="date" 
+          <input
+            type="date"
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <select className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -38,21 +72,33 @@ const AttendancePage = () => {
             <option>Cyber Security</option>
           </select>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="text-left p-4 font-medium text-gray-700">Student</th>
-                <th className="text-left p-4 font-medium text-gray-700">Course</th>
-                <th className="text-left p-4 font-medium text-gray-700">Check In</th>
-                <th className="text-left p-4 font-medium text-gray-700">Check Out</th>
-                <th className="text-left p-4 font-medium text-gray-700">Status</th>
-                <th className="text-left p-4 font-medium text-gray-700">Actions</th>
+                <th className="text-left p-4 font-medium text-gray-700">
+                  Student
+                </th>
+                <th className="text-left p-4 font-medium text-gray-700">
+                  Course
+                </th>
+                <th className="text-left p-4 font-medium text-gray-700">
+                  Check In
+                </th>
+                <th className="text-left p-4 font-medium text-gray-700">
+                  Check Out
+                </th>
+                <th className="text-left p-4 font-medium text-gray-700">
+                  Status
+                </th>
+                <th className="text-left p-4 font-medium text-gray-700">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
-              {students.slice(0, 5).map(student => (
+              {students.slice(0, 5).map((student) => (
                 <tr key={student.id} className="border-b hover:bg-gray-50">
                   <td className="p-4 font-medium">{student.name}</td>
                   <td className="p-4">{student.course}</td>
