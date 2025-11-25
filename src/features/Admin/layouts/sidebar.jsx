@@ -5,6 +5,10 @@ import {
   FaBell,
   FaWallet,
   FaStar,
+  FaUser,
+  FaCalendar,
+  FaBook,
+  FaUserEdit,
 } from "react-icons/fa";
 import { X as LucideX } from "lucide-react";
 import Flyout from "../../../components/common/tooltip";
@@ -22,12 +26,12 @@ const navLinks = [
   {
     label: "Attendance",
     href: "/attendance",
-    icon: <FaTasks className="h-4 w-4" />,
+    icon: <FaCalendar className="h-4 w-4" />,
   },
   {
     label: "Courses",
     href: "/courses",
-    icon: <FaCheckSquare className="h-4 w-4" />,
+    icon: <FaBook className="h-4 w-4" />,
   },
   {
     label: "Reports",
@@ -37,7 +41,7 @@ const navLinks = [
   {
     label: "Settings",
     href: "/settings",
-    icon: <FaWallet className="h-4 w-4" />,
+    icon: <FaUserEdit className="h-4 w-4" />,
   },
 ];
 
@@ -225,12 +229,9 @@ export default function Sidebar({ closeSidebar, collapsed }) {
             collapsed ? "justify-center" : ""
           }`}
         >
-          <img
-            src="/icons/logo.svg"
-            alt="ReferX Logo"
-            className={`${collapsed ? "h-8 w-8" : "h-10 w-10"}`}
-          />
-          {!collapsed && <span className="text-2xl font-medium">ReferX</span>}
+          {!collapsed && (
+            <span className="text-2xl font-medium">Admin Dashboard</span>
+          )}
         </Link>
         {closeSidebar && (
           <button
@@ -358,7 +359,7 @@ export default function Sidebar({ closeSidebar, collapsed }) {
                   <div className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
                     {profile?.name || "Guest"}
                   </div>
-                  <div className="text-xs text-gray-500">Gig Worker</div>
+                  <div className="text-xs text-gray-500">Admin</div>
                 </div>
               </Link>
             </div>

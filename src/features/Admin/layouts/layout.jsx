@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Outlet } from "react-router";
+import { Outlet } from "react-router-dom";
 import { Menu, ChevronLeft, ChevronRight } from "lucide-react";
 import Sidebar from "./sidebar";
 import Header from "../../../components/common/header";
@@ -13,8 +13,8 @@ const AdminAppLayout = () => {
     }
   });
   const [mobileOpen, setMobileOpen] = useState(false);
-  const openerRef = (useRef < HTMLButtonElement) | (null > null);
-  const panelRef = (useRef < HTMLDivElement) | (null > null);
+  const openerRef = useRef(null);
+  const panelRef = useRef(null);
 
   const toggleCollapsed = () => {
     setCollapsed((s) => {
@@ -33,10 +33,9 @@ const AdminAppLayout = () => {
       requestAnimationFrame(() => {
         const panel = panelRef.current;
         if (!panel) return;
-        const focusable =
-          panel.querySelectorAll <
-          HTMLElement >
-          'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+        const focusable = panel.querySelectorAll(
+          'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+        );
         if (focusable.length) {
           focusable[0].focus();
         } else {
@@ -58,9 +57,9 @@ const AdminAppLayout = () => {
         const panel = panelRef.current;
         if (!panel) return;
         const focusable = Array.from(
-          panel.querySelectorAll <
-            HTMLElement >
+          panel.querySelectorAll(
             'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+          )
         );
         if (focusable.length === 0) {
           e.preventDefault();
@@ -142,7 +141,7 @@ const AdminAppLayout = () => {
         </main>
       </div>
 
-      {/* The mobile overlay sidebar */}
+      {/* Mobile overlay sidebar */}
       {mobileOpen && (
         <div
           className="fixed inset-0 z-50 md:hidden"

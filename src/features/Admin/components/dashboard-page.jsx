@@ -1,12 +1,9 @@
-import React, { useState } from "react";
 import {
   Users,
   CheckCircle,
   XCircle,
   TrendingUp,
-  Home,
   Calendar,
-  Settings,
 } from "lucide-react";
 
 const stats = {
@@ -56,7 +53,7 @@ const recentActivity = [
 
 // subcomponents moved to top-level
 const StatsCard = ({ title, value, icon: Icon, color, change }) => (
-  <div className="bg-white p-6  rounded-lg shadow-md justify-center">
+  <div className="bg-white p-6 rounded-lg shadow-md justify-center">
     <div className="flex items-center justify-between">
       <div>
         <p className="text-sm font-medium text-gray-600">{title}</p>
@@ -152,49 +149,11 @@ const AttendanceChart = () => (
   </div>
 );
 
-// navigation items moved out so they're not created on every render
-const NAVIGATION_ITEMS = [
-  { id: "dashboard", label: "Dashboard", icon: Home },
-  { id: "students", label: "Students", icon: Users },
-  { id: "courses", label: "Courses", icon: TrendingUp },
-  { id: "attendance", label: "Attendance", icon: Calendar },
-  { id: "reports", label: "Reports", icon: TrendingUp },
-  { id: "settings", label: "Settings", icon: Settings },
-];
-
 const DashboardPage = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
-
   return (
-    <div className="flex w-full gap-6">
-      <aside className="w-64">
-        <div className="flex flex-col ">
-          <nav className="mt-8 flex-1 pb-20 overflow-y-auto">
-            {NAVIGATION_ITEMS.map((item) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    setActiveTab(item.id);
-                  }}
-                  className={`w-full flex items-center px-4 py-3 text-left hover:bg-gray-100 transition-colors ${
-                    activeTab === item.id
-                      ? "bg-blue-50 text-blue-600 border-r-4 border-blue-600"
-                      : "text-gray-700"
-                  }`}
-                >
-                  <Icon className="w-5 h-5 mr-3" />
-                  {item.label}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-      </aside>
-
+    <div className="flex w-full">
       <main className="flex-1">
-        <div className=" w-[100%] ">
+        <div className="w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <StatsCard
               title="Total Students"

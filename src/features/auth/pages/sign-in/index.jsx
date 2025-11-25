@@ -9,23 +9,14 @@ const SignIn = () => {
   const navigate = useNavigate();
   const { login, setUser } = useAuthStore();
 
-  // Controlled inputs
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("student");
-
-  // Password visibility toggle
+  const [role, setRole] = useState("admin");
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [errors, setErrors] = useState({});
+
   const togglePasswordVisibility = () => setPasswordVisible((prev) => !prev);
 
-  // Validation errors
-  const [errors, setErrors] = useState({
-    email: "",
-    password: "",
-    role: "",
-  });
-
-  // Manual validation (simple)
   const validateForm = () => {
     const newErrors = {};
 
@@ -34,7 +25,6 @@ const SignIn = () => {
 
     if (!password.trim()) newErrors.password = "Password is required";
     else if (password.length < 6) newErrors.password = "Password too short";
-    else if (password.length > 50) newErrors.password = "Password too long";
 
     if (!role) newErrors.role = "Role is required";
 
@@ -42,15 +32,12 @@ const SignIn = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Submit handler: accept any email/password and route to selected role dashboard
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    // set loading flag in store (if implemented)
     login();
 
-    // create a minimal user object and persist via setUser (will mark isAuth true)
     const userData = {
       id: Math.random().toString(36).slice(2, 9),
       email: email.trim(),
@@ -59,7 +46,6 @@ const SignIn = () => {
 
     setUser(userData, true);
 
-    // navigate to the appropriate dashboard route used in your app
     if (role === "admin") {
       navigate("/admin/dashboard", { replace: true });
     } else {
@@ -76,7 +62,7 @@ const SignIn = () => {
             <BadgeCheck className="w-60 h-30" />
           </div>
           <h2 className="text-4xl font-bold mb-4">Attendance Management</h2>
-          <p className="text-4x1 text-blue-150 mb-8">
+          <p className="text-lg text-white/80">
             Track your presence, manage your time efficiently
           </p>
         </div>
@@ -92,16 +78,13 @@ const SignIn = () => {
             ATTENDANCE HUB <br /> LOGIN
           </h1>
 
-          {/* Email errors */}
           {errors.email && (
             <p className="bg-red-200 text-red-500 p-2 rounded mb-2">
               {errors.email}
             </p>
           )}
 
-          {/* Email */}
           <input
-            name="email"
             type="email"
             placeholder="Email"
             value={email}
@@ -111,15 +94,12 @@ const SignIn = () => {
             }`}
           />
 
-          {/* Password errors */}
           {errors.password && (
             <p className="text-red-500 mb-2">{errors.password}</p>
           )}
 
-          {/* Password */}
           <div className="border border-gray-300 px-4 flex justify-between items-center py-2 rounded-md mb-5">
             <input
-              name="password"
               type={passwordVisible ? "text" : "password"}
               placeholder="Password"
               value={password}
@@ -128,63 +108,41 @@ const SignIn = () => {
             />
             <button
               type="button"
-              className="cursor-pointer ml-2"
               onClick={togglePasswordVisibility}
+              className="cursor-pointer ml-2"
             >
               {passwordVisible ? <FaEye /> : <IoMdEyeOff />}
             </button>
           </div>
 
-          {/* Role selection */}
           <div className="mb-6">
             <label className="block text-gray-700 font-medium mb-3">
               Login As
             </label>
-
             <div className="flex gap-6">
-              <div className="flex items-center">
+              <label className="flex items-center gap-2">
                 <input
                   type="radio"
-                  name="role"
-                  value="student"
-                  checked={role === "student"}
-                  onChange={() => setRole("student")}
-                  className="w-4 h-4 cursor-pointer"
-                  id="role-student"
-                />
-                <label
-                  htmlFor="role-student"
-                  className="ml-2 text-gray-700 cursor-pointer"
-                >
-                  Student
-                </label>
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  type="radio"
-                  name="role"
                   value="admin"
                   checked={role === "admin"}
                   onChange={() => setRole("admin")}
-                  className="w-4 h-4 cursor-pointer"
-                  id="role-admin"
+                  className="w-4 h-4"
                 />
-                <label
-                  htmlFor="role-admin"
-                  className="ml-2 text-gray-700 cursor-pointer"
-                >
-                  Admin
-                </label>
-              </div>
+                <span>Admin</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  value="student"
+                  checked={role === "student"}
+                  onChange={() => setRole("student")}
+                  className="w-4 h-4"
+                />
+                <span>Student</span>
+              </label>
             </div>
-
-            {errors.role && (
-              <p className="text-red-500 text-sm mt-2">{errors.role}</p>
-            )}
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors font-medium"
@@ -192,22 +150,20 @@ const SignIn = () => {
             Sign In
           </button>
 
-          {/* Forgot Password */}
           <div className="mt-4 text-center">
             <Link
               to="/auth/forgot-password"
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
+              className="text-blue-600 hover:text-blue-800 text-sm"
             >
               Forgot Password?
             </Link>
           </div>
 
-          {/* Create Account */}
           <div className="mt-4 text-center border-t pt-4">
-            <p className="text-gray-600 text-sm mb-2">Don't have an account?</p>
+            <p className="text-sm text-gray-600 mb-2">Don't have an account?</p>
             <Link
               to="/auth/sign-up"
-              className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+              className="text-blue-600 hover:text-blue-800 font-medium"
             >
               Create an Account
             </Link>
