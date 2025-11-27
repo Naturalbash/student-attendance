@@ -1,15 +1,4 @@
-import {
-  FaHome,
-  FaTasks,
-  FaCheckSquare,
-  FaBell,
-  FaWallet,
-  FaStar,
-  FaUser,
-  FaCalendar,
-  FaBook,
-  FaUserEdit,
-} from "react-icons/fa";
+import { FaHome, FaBell, FaCalendar, FaBook, FaUserEdit } from "react-icons/fa";
 import { X as LucideX } from "lucide-react";
 import Flyout from "../../../components/common/tooltip";
 import { Link, useLocation } from "react-router-dom";
@@ -20,27 +9,27 @@ import LogoutModal from "../../../components/common/logout-modal";
 const navLinks = [
   {
     label: "Dashboard",
-    href: "/dashboard",
+    href: "/admin/dashboard",
     icon: <FaHome className="h-4 w-4" />,
   },
   {
     label: "Attendance",
-    href: "/attendance",
+    href: "/admin/attendance",
     icon: <FaCalendar className="h-4 w-4" />,
   },
   {
     label: "Courses",
-    href: "/courses",
+    href: "/admin/courses",
     icon: <FaBook className="h-4 w-4" />,
   },
   {
     label: "Reports",
-    href: "/reports",
+    href: "/admin/reports",
     icon: <FaBell className="h-4 w-4" />,
   },
   {
     label: "Settings",
-    href: "/settings",
+    href: "/admin/settings",
     icon: <FaUserEdit className="h-4 w-4" />,
   },
 ];
