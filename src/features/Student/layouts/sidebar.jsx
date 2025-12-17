@@ -29,7 +29,7 @@ const navLinks = [
   },
   {
     label: "Settings",
-    href: "admin/settings",
+    href: "/admin/settings",
     icon: <FaUserEdit className="h-4 w-4" />,
   },
 ];

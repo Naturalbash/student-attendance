@@ -3,11 +3,9 @@ import { FaEye } from "react-icons/fa";
 import { IoMdEyeOff } from "react-icons/io";
 import { BadgeCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuthStore } from "../../store/auth.store";
 
 const SignIn = () => {
   const navigate = useNavigate();
-  const { login, setUser } = useAuthStore();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,16 +33,6 @@ const SignIn = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
-    login();
-
-    const userData = {
-      id: Math.random().toString(36).slice(2, 9),
-      email: email.trim(),
-      role,
-    };
-
-    setUser(userData, true);
 
     if (role === "admin") {
       navigate("/admin/dashboard", { replace: true });
