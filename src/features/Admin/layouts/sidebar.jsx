@@ -23,13 +23,8 @@ const navLinks = [
     icon: <FaBook className="h-4 w-4" />,
   },
   {
-    label: "Reports",
-    href: "/admin/reports",
-    icon: <FaBell className="h-4 w-4" />,
-  },
-  {
     label: "Settings",
-    href: "admin/settings",
+    href: "/admin/settings",
     icon: <FaUserEdit className="h-4 w-4" />,
   },
 ];
@@ -330,7 +325,10 @@ export default function Sidebar({ closeSidebar, collapsed }) {
           <>
             {/* Profile Info */}
             <div className="flex items-center justify-between mb-3">
-              <Link to="/profile" className="flex items-center gap-3 group">
+              <Link
+                to="/admin/settings"
+                className="flex items-center gap-3 group"
+              >
                 <div className="h-10 w-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
                   {profile?.avatarUrl ? (
                     <img
@@ -494,7 +492,7 @@ export default function Sidebar({ closeSidebar, collapsed }) {
             }}
           >
             <Link
-              to="/profile"
+              to="/admin/settings"
               onClick={(e) => {
                 e.stopPropagation();
                 setTimeout(() => {
@@ -526,7 +524,7 @@ export default function Sidebar({ closeSidebar, collapsed }) {
       {menuOpen && !anchoredPos && (
         <div className="md:hidden fixed bottom-20 right-4 z-[9999] bg-white shadow-md rounded-md min-w-[160px] p-1">
           <Link
-            to="/profile"
+            to="/admin/settings"
             onClick={(e) => {
               e.stopPropagation();
               setTimeout(() => {

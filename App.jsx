@@ -13,10 +13,9 @@ import ForgotPassword from "./src/features/auth/pages/forgot-password";
 /* Admin */
 import AdminAppLayout from "./src/features/Admin/layouts/layout";
 import AdminDashboard from "./src/features/Admin/pages/dashboard-page";
-import AttendancePage from "./src/features/Admin/components/attendance-page";
-import CoursesPage from "./src/features/Admin/components/courses-page";
-import ReportsPage from "./src/features/Admin/components/reports-page";
-import SettingsPage from "./src/features/Admin/components/settings-page";
+import AttendancePage from "./src/features/Admin/pages/attendance-page";
+import CoursesPage from "./src/features/Admin/pages/courses-page";
+import SettingsPage from "./src/features/Admin/pages/settings-page";
 import StudentAppLayout from "./src/features/Student/layouts/layout";
 
 function App() {
@@ -35,7 +34,6 @@ function App() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/attendance" element={<AttendancePage />} />
           <Route path="/admin/courses" element={<CoursesPage />} />
-          <Route path="/admin/reports" element={<ReportsPage />} />
           <Route path="/admin/settings" element={<SettingsPage />} />
         </Route>
 
@@ -44,7 +42,6 @@ function App() {
           <Route path="/student/dashboard" element={<AdminDashboard />} />
           <Route path="/student/attendance" element={<AttendancePage />} />
           <Route path="/student/courses" element={<CoursesPage />} />
-          <Route path="/student/reports" element={<ReportsPage />} />
           <Route path="/student/settings" element={<SettingsPage />} />
         </Route>
       </Routes>
