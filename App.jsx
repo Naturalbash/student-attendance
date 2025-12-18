@@ -15,8 +15,13 @@ import AdminAppLayout from "./src/features/Admin/layouts/layout";
 import AdminDashboard from "./src/features/Admin/pages/dashboard-page";
 import AttendancePage from "./src/features/Admin/pages/attendance-page";
 import CoursesPage from "./src/features/Admin/pages/courses-page";
-import SettingsPage from "./src/features/Admin/pages/settings-page";
+import SettingsPage from "./src/components/common/settings-page";
 import StudentAppLayout from "./src/features/Student/layouts/layout";
+import StudentDashboardPage from "./src/features/Student/pages/student-dashboard-page";
+import StudentAttendancePage from "./src/features/Student/pages/attendance-page";
+import MyCoursesPage from "./src/features/Student/pages/courses-page";
+import MyProjectsPage from "./src/features/Student/pages/projects-page";
+import StudentReportsPage from "./src/features/Student/pages/reports-page";
 
 function App() {
   return (
@@ -39,10 +44,15 @@ function App() {
 
         {/* Student routes */}
         <Route path="/student" element={<StudentAppLayout />}>
-          <Route path="/student/dashboard" element={<AdminDashboard />} />
-          <Route path="/student/attendance" element={<AttendancePage />} />
-          <Route path="/student/courses" element={<CoursesPage />} />
+          <Route path="/student/dashboard" element={<StudentDashboardPage />} />
+          <Route
+            path="/student/attendance"
+            element={<StudentAttendancePage />}
+          />
+          <Route path="/student/courses" element={<MyCoursesPage />} />
           <Route path="/student/settings" element={<SettingsPage />} />
+          <Route path="/student/projects" element={<MyProjectsPage />} />
+          <Route path="/student/reports" element={<StudentReportsPage />} />
         </Route>
       </Routes>
     </Router>

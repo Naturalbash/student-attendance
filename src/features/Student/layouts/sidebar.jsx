@@ -9,27 +9,32 @@ import LogoutModal from "../../../components/common/logout-modal";
 const navLinks = [
   {
     label: "Dashboard",
-    href: "/admin/dashboard",
+    href: "/student/dashboard",
     icon: <FaHome className="h-4 w-4" />,
   },
   {
-    label: "Attendance",
-    href: "/admin/attendance",
+    label: "My Attendance",
+    href: "/student/attendance",
     icon: <FaCalendar className="h-4 w-4" />,
   },
   {
-    label: "Courses",
-    href: "/admin/courses",
+    label: "My Courses",
+    href: "/student/courses",
     icon: <FaBook className="h-4 w-4" />,
   },
   {
+    label: "My Projects",
+    href: "/student/projects",
+    icon: <FaBell className="h-4 w-4" />,
+  },
+  {
     label: "Reports",
-    href: "/admin/reports",
+    href: "/student/reports",
     icon: <FaBell className="h-4 w-4" />,
   },
   {
     label: "Settings",
-    href: "/admin/settings",
+    href: "/student/settings",
     icon: <FaUserEdit className="h-4 w-4" />,
   },
 ];
@@ -219,7 +224,7 @@ export default function Sidebar({ closeSidebar, collapsed }) {
           }`}
         >
           {!collapsed && (
-            <span className="text-2xl font-medium">Admin Dashboard</span>
+            <span className="text-2xl font-medium">Welcome Back</span>
           )}
         </Link>
         {closeSidebar && (
@@ -330,7 +335,10 @@ export default function Sidebar({ closeSidebar, collapsed }) {
           <>
             {/* Profile Info */}
             <div className="flex items-center justify-between mb-3">
-              <Link to="/profile" className="flex items-center gap-3 group">
+              <Link
+                to="/student/settings"
+                className="flex items-center gap-3 group"
+              >
                 <div className="h-10 w-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
                   {profile?.avatarUrl ? (
                     <img
@@ -494,7 +502,7 @@ export default function Sidebar({ closeSidebar, collapsed }) {
             }}
           >
             <Link
-              to="/profile"
+              to="/student/settings"
               onClick={(e) => {
                 e.stopPropagation();
                 setTimeout(() => {
@@ -526,7 +534,7 @@ export default function Sidebar({ closeSidebar, collapsed }) {
       {menuOpen && !anchoredPos && (
         <div className="md:hidden fixed bottom-20 right-4 z-[9999] bg-white shadow-md rounded-md min-w-[160px] p-1">
           <Link
-            to="/profile"
+            to="/student/settings"
             onClick={(e) => {
               e.stopPropagation();
               setTimeout(() => {
