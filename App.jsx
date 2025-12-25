@@ -15,7 +15,10 @@ import AdminAppLayout from "./src/features/Admin/layouts/layout";
 import AdminDashboard from "./src/features/Admin/pages/dashboard-page";
 import AttendancePage from "./src/features/Admin/pages/attendance-page";
 import CoursesPage from "./src/features/Admin/pages/courses-page";
+
 import SettingsPage from "./src/components/common/settings-page";
+
+/*Student*/
 import StudentAppLayout from "./src/features/Student/layouts/layout";
 import StudentDashboardPage from "./src/features/Student/pages/student-dashboard-page";
 import StudentAttendancePage from "./src/features/Student/pages/attendance-page";

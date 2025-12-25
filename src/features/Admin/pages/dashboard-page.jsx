@@ -149,7 +149,7 @@ const RecentActivity = ({ activities }) => (
       <h3 className="text-base font-semibold text-slate-800">
         Recent Activity
       </h3>
-      <button className="text-xs text-indigo-600 hover:underline">
+      <button className="text-xs text-indigo-600 hover:underline cursor-pointer">
         View all
       </button>
     </div>
@@ -187,7 +187,7 @@ const QuickActions = ({ onAddStudent, onGenerateReport }) => (
     <div className="space-y-3">
       <button
         onClick={onAddStudent}
-        className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-indigo-700 active:scale-95"
+        className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-indigo-700 active:scale-95 cursor-pointer"
       >
         <PlusCircle size={16} />
         Add Student
@@ -195,7 +195,7 @@ const QuickActions = ({ onAddStudent, onGenerateReport }) => (
 
       <button
         onClick={onGenerateReport}
-        className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 active:scale-95"
+        className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 active:scale-95 cursor-pointer"
       >
         <FileText size={16} />
         Generate Report
@@ -232,10 +232,10 @@ const AddStudentModal = ({ isOpen, onClose, onAddStudent }) => {
         </div>
 
         <div className="space-y-4">
-          {["name", "email"].map((field) => (
+          {["Name", "Email"].map((field) => (
             <input
               key={field}
-              placeholder={field.toUpperCase()}
+              placeholder={field}
               value={form[field]}
               onChange={(e) => setForm({ ...form, [field]: e.target.value })}
               className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"

@@ -208,7 +208,7 @@ export default function Sidebar({ closeSidebar, collapsed }) {
         }`}
       >
         <Link
-          to="/dashboard"
+          to="/admin/dashboard"
           className={`flex items-center gap-2 ${
             collapsed ? "justify-center" : ""
           }`}
