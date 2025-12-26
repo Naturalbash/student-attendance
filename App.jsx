@@ -41,23 +41,22 @@ function App() {
 
         {/* Admin routes */}
         <Route path="/admin" element={<AdminAppLayout />}>
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/attendance" element={<AttendancePage />} />
-          <Route path="/admin/courses" element={<CoursesPage />} />
-          <Route path="/admin/settings" element={<SettingsPage />} />
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="attendance" element={<AttendancePage />} />
+          <Route path="courses" element={<CoursesPage />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
 
         {/* Student routes */}
         <Route path="/student" element={<StudentAppLayout />}>
-          <Route path="/student/dashboard" element={<StudentDashboardPage />} />
-          <Route
-            path="/student/attendance"
-            element={<StudentAttendancePage />}
-          />
-          <Route path="/student/courses" element={<MyCoursesPage />} />
-          <Route path="/student/settings" element={<SettingsPage />} />
-          <Route path="/student/projects" element={<MyProjectsPage />} />
-          <Route path="/student/reports" element={<StudentReportsPage />} />
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<StudentDashboardPage />} />
+          <Route path="attendance" element={<StudentAttendancePage />} />
+          <Route path="courses" element={<MyCoursesPage />} />
+          <Route path="projects" element={<MyProjectsPage />} />
+          <Route path="reports" element={<StudentReportsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Routes>
     </Router>

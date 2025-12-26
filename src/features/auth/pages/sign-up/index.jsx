@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { IoMdEyeOff } from "react-icons/io";
 import { BadgeCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import supabase from "../../../../utils/supabase";
 import signUpAndCreateProfile from "../../../../utils/auth";
 import { SignUpButton } from "./sign-up-btn";
 
@@ -16,15 +15,6 @@ export default function SignUp() {
   const [role, setRole] = useState("student");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" || session?.user) {
-        navigate("/", { replace: true });
-      }
-    });
-    return () => data?.subscription?.unsubscribe();
-  }, [navigate]);
 
   async function handleSubmit(e) {
     e.preventDefault();

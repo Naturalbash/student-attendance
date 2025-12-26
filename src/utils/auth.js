@@ -1,36 +1,74 @@
 import supabase from "./supabase";
 
-const signUpAndCreateProfile = async ({ name, email, password, role }) => {
-  // 1️⃣ Sign up user
+/**
+ * Ensure profile exists after successful login
+ * This runs ONLY when user has a valid session
+ */
+export async function ensureProfileExists(user) {
+  if (!user) return null;
+
+  // Try fetching profile
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("id, role")
+    .eq("id", user.id)
+    .single();
+
+  // Profile exists
+  if (profile) return profile;
+
+  // If error is NOT "row not found", stop
+  if (error && error.code !== "PGRST116") {
+    console.error("Profile fetch error:", error);
+    throw error;
+  }
+
+  // Create profile
+  const { data: newProfile, error: insertError } = await supabase
+    .from("profiles")
+    .insert({
+      id: user.id,
+      email: user.email,
+      full_name: user.user_metadata?.full_name || "",
+      role: user.user_metadata?.role || "student",
+    })
+    .select()
+    .single();
+
+  if (insertError) {
+    console.error("Profile creation failed:", insertError);
+    throw insertError;
+  }
+
+  return newProfile;
+}
+
+/**
+ * Signup helper
+ */
+export default async function signUpAndCreateProfile({
+  email,
+  password,
+  full_name,
+  role,
+}) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: "http://localhost:5173/auth/confirm-email",
       data: {
-        role, // stored in auth metadata
+        full_name,
+        role,
       },
     },
   });
 
-  if (error) throw error;
+  if (error) return { error };
 
-  const user = data.user;
-  if (!user) return;
-
-  // 2️⃣ Create profile row
-  const { error: profileError } = await supabase.from("profiles").insert([
-    {
-      id: user.id,
-      name,
-      email, // IMPORTANT: prevents null email
-      role,
-    },
-  ]);
-
-  if (profileError) throw profileError;
-
-  return data;
-};
-
-export default signUpAndCreateProfile;
+  // If email confirmation is ON, user is null
+  return {
+    user: data.user ?? null,
+    needsConfirmation: !data.user,
+    error: null,
+  };
+}

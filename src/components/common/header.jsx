@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import LogoutModal from "./logout-modal";
 import { useNavigate } from "react-router-dom";
+import supabase from "../../utils/supabase";
 
 export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -20,8 +21,19 @@ export default function Header() {
 
   async function handleConfirmLogout() {
     setLogoutOpen(false);
-    // TODO: Add logout API call here when ready
-    navigate("/auth/sign-in");
+
+    try {
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Logout error:", error.message);
+      }
+    } catch (err) {
+      console.error("Unexpected logout error:", err);
+    } finally {
+      // Redirect to sign-in page
+      navigate("/auth/sign-in", { replace: true });
+    }
   }
 
   return (
@@ -75,13 +87,12 @@ export default function Header() {
           </div>
         </nav>
       </div>
+
       <LogoutModal
         open={logoutOpen}
         onClose={() => setLogoutOpen(false)}
-        onConfirm={handleConfirmLogout}
+        onConfirm={handleConfirmLogout} // <-- Supabase logout handled here
       />
     </header>
   );
 }
-
-// handled logout modal confirmation outside component render to keep functions stable

@@ -5,6 +5,7 @@ import { BadgeCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import supabase from "../../../../utils/supabase";
 import { SignInButton } from "./sign-in-btn";
+import { ensureProfileExists } from "../../../../utils/auth";
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -38,6 +39,7 @@ const SignIn = () => {
     setLoading(true);
 
     try {
+      // 1️⃣ Sign in
       const { data, error: signInError } =
         await supabase.auth.signInWithPassword({
           email,
@@ -51,21 +53,19 @@ const SignIn = () => {
 
       const user = data.user;
       if (!user) {
-        setError("Authentication failed");
+        setError("Authentication failed. Have you confirmed your email?");
         return;
       }
 
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
+      // 2️⃣ Ensure profile exists (CREATE IF MISSING)
+      const profile = await ensureProfileExists(user);
 
-      if (profileError || !profile) {
-        setError("User profile not found");
+      if (!profile) {
+        setError("Unable to load user profile");
         return;
       }
 
+      // 3️⃣ Redirect by role
       if (profile.role === "admin") {
         navigate("/admin/dashboard", { replace: true });
       } else {
@@ -146,7 +146,7 @@ const SignIn = () => {
 
             <div className="mt-4 text-center border-t pt-4">
               <p className="text-sm text-gray-600 mb-2">
-                Don't have an account?
+                Don&apos;t have an account?
               </p>
               <Link to="/auth/sign-up" className="text-blue-600 font-medium">
                 Create an Account
