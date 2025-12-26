@@ -9,6 +9,7 @@ import {
 import SignIn from "./src/features/auth/pages/sign-in";
 import SignUp from "./src/features/auth/pages/sign-up";
 import ForgotPassword from "./src/features/auth/pages/forgot-password";
+import ConfirmEmail from "./src/features/auth/pages/confirm";
 
 /* Admin */
 import AdminAppLayout from "./src/features/Admin/layouts/layout";
@@ -35,6 +36,7 @@ function App() {
         {/* Auth routes */}
         <Route path="/auth/sign-in" element={<SignIn />} />
         <Route path="/auth/sign-up" element={<SignUp />} />
+        <Route path="/auth/confirm" element={<ConfirmEmail />} />
         <Route path="/auth/forgot-password" element={<ForgotPassword />} />
 
         {/* Admin routes */}
