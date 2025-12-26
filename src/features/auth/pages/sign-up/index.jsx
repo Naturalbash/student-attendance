@@ -4,6 +4,7 @@ import { BadgeCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import supabase from "../../../../utils/supabase";
 import signUpAndCreateProfile from "../../../../utils/auth";
+import { SignUpButton } from "./sign-up-btn";
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -13,21 +14,16 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState("student");
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Redirect if logged in
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" || session?.user) {
         navigate("/", { replace: true });
       }
     });
-
-    return () => {
-      data?.subscription?.unsubscribe();
-    };
+    return () => data?.subscription?.unsubscribe();
   }, [navigate]);
 
   async function handleSubmit(e) {
@@ -66,16 +62,16 @@ export default function SignUp() {
         navigate("/", { replace: true });
       }
     } catch (err) {
-      setError("Something went wrong");
       console.error(err);
+      setError("Something went wrong");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen flex">
-      <div className="flex-1 bg-gradient-to-br from-blue-800 to-purple-500 flex items-center justify-center text-white">
+    <div className="min-h-screen flex flex-col md:flex-row">
+      <div className="hidden md:flex md:flex-1 bg-gradient-to-br from-blue-800 to-purple-500 flex-col justify-center items-center text-white p-8">
         <div className="text-center">
           <div className="w-32 h-32 mx-auto mb-6 bg-white/20 rounded-full flex items-center justify-center">
             <BadgeCheck className="w-16 h-16" />
@@ -87,22 +83,22 @@ export default function SignUp() {
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center bg-gray-50">
+      <div className="flex-1 flex items-center justify-center bg-gray-50 p-4">
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-md bg-white p-6 rounded-lg shadow"
+          className="w-full max-w-md bg-white p-6 rounded-lg shadow-md flex flex-col gap-4"
         >
-          <h1 className="text-2xl font-bold text-center mb-6">
+          <h1 className="text-2xl font-bold text-center mb-4">
             Create Account
           </h1>
 
-          {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+          {error && <p className="text-red-600 text-sm">{error}</p>}
 
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Full name"
-            className="w-full border px-4 py-2 rounded mb-3"
+            className="w-full border px-4 py-2 rounded"
           />
 
           <input
@@ -110,10 +106,10 @@ export default function SignUp() {
             onChange={(e) => setEmail(e.target.value)}
             type="email"
             placeholder="Email"
-            className="w-full border px-4 py-2 rounded mb-3"
+            className="w-full border px-4 py-2 rounded"
           />
 
-          <div className="border px-4 py-2 rounded flex items-center mb-3">
+          <div className="border px-4 py-2 rounded flex items-center">
             <input
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -129,13 +125,13 @@ export default function SignUp() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             type="password"
             placeholder="Confirm password"
-            className="w-full border px-4 py-2 rounded mb-4"
+            className="w-full border px-4 py-2 rounded"
           />
 
-          <div className="mb-6">
+          <div className="mb-4">
             <label className="font-medium block mb-2">Register As</label>
             <div className="flex gap-6">
-              <label className="flex gap-2 items-center">
+              <label className="flex items-center gap-2">
                 <input
                   type="radio"
                   checked={role === "student"}
@@ -143,8 +139,7 @@ export default function SignUp() {
                 />
                 Student
               </label>
-
-              <label className="flex gap-2 items-center">
+              <label className="flex items-center gap-2">
                 <input
                   type="radio"
                   checked={role === "admin"}
@@ -155,12 +150,7 @@ export default function SignUp() {
             </div>
           </div>
 
-          <button
-            disabled={loading}
-            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-          >
-            {loading ? "Creating..." : "Create Account"}
-          </button>
+          <SignUpButton loading={loading} />
 
           <p className="text-center text-sm mt-4">
             Already have an account?{" "}
