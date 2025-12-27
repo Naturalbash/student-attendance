@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FaEye } from "react-icons/fa";
 import { IoMdEyeOff } from "react-icons/io";
 import { BadgeCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -12,6 +13,8 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const togglePasswordVisibility = () => setPasswordVisible((prev) => !prev);
   const [role, setRole] = useState("student");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -99,21 +102,27 @@ export default function SignUp() {
             className="w-full border px-4 py-2 rounded"
           />
 
-          <div className="border px-4 py-2 rounded flex items-center">
+          <div className="border px-4 py-2 flex items-center rounded-md">
             <input
+              type={passwordVisible ? "text" : "password"}
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              type="password"
-              placeholder="Password"
               className="flex-1 outline-none"
             />
-            <IoMdEyeOff />
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className="ml-2"
+            >
+              {passwordVisible ? <FaEye /> : <IoMdEyeOff />}
+            </button>
           </div>
 
           <input
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            type="password"
+            type={passwordVisible ? "text" : "password"}
             placeholder="Confirm password"
             className="w-full border px-4 py-2 rounded"
           />

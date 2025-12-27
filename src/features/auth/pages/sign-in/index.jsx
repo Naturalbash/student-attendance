@@ -39,7 +39,6 @@ const SignIn = () => {
     setLoading(true);
 
     try {
-      // 1️⃣ Sign in
       const { data, error: signInError } =
         await supabase.auth.signInWithPassword({
           email,
@@ -57,7 +56,7 @@ const SignIn = () => {
         return;
       }
 
-      // 2️⃣ Ensure profile exists (CREATE IF MISSING)
+      // Ensure profile exists (CREATE IF MISSING)
       const profile = await ensureProfileExists(user);
 
       if (!profile) {
@@ -65,7 +64,7 @@ const SignIn = () => {
         return;
       }
 
-      // 3️⃣ Redirect by role
+      // Redirect by role
       if (profile.role === "admin") {
         navigate("/admin/dashboard", { replace: true });
       } else {
@@ -81,7 +80,6 @@ const SignIn = () => {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
-      {/* Left panel hidden on mobile */}
       <div className="hidden md:flex md:flex-1 bg-gradient-to-br from-blue-800 to-purple-500 flex-col justify-center items-center text-white p-8">
         <div className="text-center">
           <div className="w-32 h-32 mx-auto mb-6 bg-white/20 flex items-center rounded-full justify-center">
@@ -94,7 +92,6 @@ const SignIn = () => {
         </div>
       </div>
 
-      {/* Right panel */}
       <div className="flex-1 flex justify-center items-center bg-gray-50 p-4">
         <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md flex flex-col">
           <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">

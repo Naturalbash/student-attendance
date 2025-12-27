@@ -46,7 +46,6 @@ export default function Sidebar({ collapsed, closeSidebar }) {
         collapsed ? "w-20" : "w-72"
       }`}
     >
-      {/* Header */}
       <div
         className={`flex items-center justify-between px-4 py-3 border-b ${
           collapsed ? "justify-center" : ""
@@ -73,9 +72,7 @@ export default function Sidebar({ collapsed, closeSidebar }) {
         )}
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 flex flex-col justify-between p-4 overflow-y-auto">
-        {/* Top Links */}
         <ul className="space-y-2">
           {navLinks.map((link) => {
             const isActive = location.pathname === link.href;
@@ -95,9 +92,7 @@ export default function Sidebar({ collapsed, closeSidebar }) {
           })}
         </ul>
 
-        {/* Bottom Links: Settings + Logout */}
         <div className="flex flex-col items-center space-y-2 mt-4">
-          {/* Settings */}
           <Link
             to="/student/settings"
             className={`flex items-center gap-2 w-full rounded-lg p-2 text-gray-700 hover:bg-gray-100 transition-colors ${
@@ -107,7 +102,6 @@ export default function Sidebar({ collapsed, closeSidebar }) {
             <FaUserEdit className="h-4 w-4" /> {!collapsed && "Settings"}
           </Link>
 
-          {/* Logout */}
           <button
             onClick={() => setLogoutOpen(true)}
             className={`flex items-center gap-2 w-full rounded-lg p-2 text-red-600 hover:bg-red-50 transition-colors ${
@@ -119,7 +113,6 @@ export default function Sidebar({ collapsed, closeSidebar }) {
         </div>
       </nav>
 
-      {/* Logout Modal */}
       <LogoutModal
         open={logoutOpen}
         onClose={() => setLogoutOpen(false)}
