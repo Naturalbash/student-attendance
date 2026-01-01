@@ -5,6 +5,8 @@ import {
   FaBook,
   FaUserEdit,
   FaSignOutAlt,
+  FaFolder,
+  FaFileAlt,
 } from "react-icons/fa";
 import { Link, useLocation } from "react-router-dom";
 import LogoutModal from "../../../components/common/logout-modal";
@@ -24,6 +26,11 @@ const navLinks = [
     label: "Courses",
     href: "/student/courses",
     icon: <FaBook className="h-4 w-4" />,
+  },
+  {
+    label: "Projects",
+    href: "/student/projects",
+    icon: <FaFolder className="h-4 w-4" />,
   },
 ];
 

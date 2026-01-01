@@ -46,7 +46,7 @@ const SignIn = () => {
         });
 
       if (signInError) {
-        setError(signInError.message);
+        setError("Something went wrong with the server");
         return;
       }
 
@@ -60,7 +60,7 @@ const SignIn = () => {
       const profile = await ensureProfileExists(user);
 
       if (!profile) {
-        setError("Unable to load user profile");
+        setError("User does not exist");
         return;
       }
 
@@ -72,7 +72,7 @@ const SignIn = () => {
       }
     } catch (err) {
       console.error(err);
-      setError("Something went wrong. Try again.");
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }

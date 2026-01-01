@@ -1,39 +1,15 @@
-import {
-  Users,
-  CheckCircle,
-  XCircle,
-  BookOpen,
-  TrendingUp,
-} from "lucide-react";
+import { CheckCircle, BookOpen, TrendingUp } from "lucide-react";
+import { SpinnerDotted } from "spinners-react";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import supabase from "../../../utils/supabase";
+import { getStudentDashboardData } from "../../../utils/dashboard";
+import { ensureStudentData } from "../../../utils/ensureStudentData";
 
-/* =======================
-   MOCK DATA
-======================= */
-const initialStats = [
-  { title: "Total Courses", value: 4, icon: BookOpen },
-  { title: "Attendance", value: 90, icon: CheckCircle, change: 5 },
-  { title: "Completed Projects", value: 3, icon: TrendingUp },
-];
-
-const courses = [
-  { id: 1, name: "Web Development", progress: 80 },
-  { id: 2, name: "Graphic Design", progress: 60 },
-  { id: 3, name: "UI/UX Design", progress: 40 },
-  { id: 4, name: "Digital Marketing", progress: 20 },
-];
-
-const attendanceData = [80, 95, 85, 90, 88];
-
-const recentActivityData = [
-  { id: 1, action: "Completed Web Development Module 1", time: "2 days ago" },
-  { id: 2, action: "Marked Present for Monday", time: "3 days ago" },
-  { id: 3, action: "Started Graphic Design Module 2", time: "4 days ago" },
-];
-
-/* =======================
-   COMPONENTS
-======================= */
-const StatCard = ({ title, value, icon: Icon, change }) => (
+// =======================
+// Stat Card Component
+// =======================
+const StatCard = ({ title, value, icon: Icon }) => (
   <div className="group bg-white rounded-2xl border border-slate-100 p-5 shadow-sm transition hover:shadow-lg hover:-translate-y-1">
     <div className="flex items-center justify-between">
       <div>
@@ -42,118 +18,198 @@ const StatCard = ({ title, value, icon: Icon, change }) => (
           {value}
           {title === "Attendance" ? "%" : ""}
         </p>
-        {change !== undefined && (
-          <p
-            className={`mt-2 flex items-center gap-1 text-xs ${
-              change > 0 ? "text-emerald-600" : "text-rose-600"
-            }`}
-          >
-            <TrendingUp size={14} />
-            {change > 0 ? "+" : ""}
-            {change}% this week
-          </p>
-        )}
       </div>
-      <div className="rounded-xl bg-indigo-50 p-3 text-indigo-600 transition group-hover:bg-indigo-600 group-hover:text-white">
+      <div className="rounded-xl bg-indigo-50 p-3 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white">
         <Icon className="h-6 w-6" />
       </div>
     </div>
   </div>
 );
 
-const AttendanceOverview = () => (
-  <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-    <h3 className="text-base font-semibold text-slate-800 mb-4">
-      Weekly Attendance
-    </h3>
-    <div className="flex items-end justify-between h-48">
-      {["Mon", "Tue", "Wed", "Thu", "Fri"].map((day, index) => (
-        <div key={day} className="flex flex-col items-center gap-2 w-full">
-          <div
-            className="w-8 rounded-lg bg-gradient-to-t from-indigo-600 to-indigo-300 transition hover:opacity-90"
-            style={{ height: `${attendanceData[index]}px` }}
-          />
-          <span className="text-xs text-slate-500">{day}</span>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+// =======================
+// Attendance Overview
+// =======================
+const AttendanceOverview = ({ attendance }) => {
+  const last5 = attendance.slice(0, 5).reverse();
+  const days = last5.map((a) => ({
+    day: new Date(a.date).toLocaleDateString("en-US", { weekday: "short" }),
+    present: a.present,
+  }));
 
-const CurrentCourses = () => (
+  return (
+    <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+      <h3 className="text-base font-semibold text-slate-800 mb-4">
+        Weekly Attendance
+      </h3>
+      <div className="flex items-end justify-between h-48">
+        {days.map((d, i) => (
+          <div key={i} className="flex flex-col items-center gap-2 w-full">
+            <div
+              className={`w-8 rounded-lg ${
+                d.present ? "bg-indigo-600" : "bg-slate-300"
+              } transition`}
+              style={{ height: d.present ? "120px" : "40px" }}
+            />
+            <span className="text-xs text-slate-500">{d.day}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// =======================
+// Current Courses
+// =======================
+const CurrentCourses = ({ courses }) => (
   <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm space-y-4">
     <h3 className="text-base font-semibold text-slate-800">My Courses</h3>
     <div className="space-y-3">
       {courses.map((course) => (
         <div
           key={course.id}
-          className="flex items-center justify-between rounded-xl border border-slate-200 p-3 hover:bg-slate-50 transition"
+          className="flex items-center justify-between rounded-xl border border-slate-200 p-3"
         >
           <p className="font-medium text-slate-800">{course.name}</p>
           <div className="w-32 h-3 bg-slate-200 rounded-full overflow-hidden">
             <div
               className="h-full bg-indigo-600 transition-all"
               style={{ width: `${course.progress}%` }}
-            ></div>
+            />
           </div>
           <span className="text-xs text-slate-500">{course.progress}%</span>
         </div>
       ))}
+      {courses.length === 0 && (
+        <p className="text-gray-500 text-sm">No courses assigned yet.</p>
+      )}
     </div>
   </div>
 );
 
-const RecentActivity = () => (
+// =======================
+// Recent Activity
+// =======================
+const RecentActivity = ({ activities }) => (
   <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
     <h3 className="text-base font-semibold text-slate-800 mb-4">
       Recent Activity
     </h3>
     <div className="space-y-3">
-      {recentActivityData.map((activity) => (
+      {activities.map((activity, i) => (
         <div
-          key={activity.id}
-          className="flex items-center justify-between rounded-xl p-3 transition hover:bg-slate-50"
+          key={i}
+          className="flex items-center justify-between rounded-xl p-3 hover:bg-slate-50"
         >
           <p className="text-sm text-slate-800">{activity.action}</p>
-          <span className="text-xs text-slate-400">{activity.time}</span>
+          <span className="text-xs text-slate-400">
+            {new Date(activity.created_at).toLocaleDateString()}
+          </span>
         </div>
       ))}
+      {activities.length === 0 && (
+        <p className="text-gray-500 text-sm">No recent activity.</p>
+      )}
     </div>
   </div>
 );
 
-/* =======================
-   MAIN STUDENT DASHBOARD
-======================= */
+// =======================
+// Student Dashboard Page
+// =======================
 const StudentDashboardPage = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [dashboard, setDashboard] = useState(null);
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      setLoading(true);
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        setDashboard(null);
+        setLoading(false);
+        return;
+      }
+
+      // Auto-create student data if missing
+      await ensureStudentData(user.id);
+
+      const data = await getStudentDashboardData(user.id);
+      setDashboard(data);
+      setLoading(false);
+    };
+
+    loadDashboard();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4 animate-fade-in">
+          <SpinnerDotted
+            size={40}
+            thickness={100}
+            speed={100}
+            color="#4f46e5"
+          />
+          <p className="text-sm text-slate-500 animate-pulse">
+            Loading your dashboard...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!dashboard) navigate("/auth/sign-in", { replace: true });
+
+  const courses = dashboard?.courses || [];
+  const attendance = dashboard?.attendance || [];
+  const activities = dashboard?.activities || [];
+
+  const totalCourses = courses.length;
+  const completedCourses = courses.filter((c) => c.progress === 100).length;
+  const attendanceRate =
+    attendance.length > 0
+      ? Math.round(
+          (attendance.filter((a) => a.present).length / attendance.length) * 100
+        )
+      : 0;
+
+  const stats = [
+    { title: "Total Courses", value: totalCourses, icon: BookOpen },
+    { title: "Attendance", value: attendanceRate, icon: CheckCircle },
+    { title: "Completed Projects", value: completedCourses, icon: TrendingUp },
+  ];
+
   return (
     <main className="min-h-screen w-full bg-slate-50 p-6 space-y-6">
-      {/* HEADER */}
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">
-          Welcome Back, Student!
+          Welcome Back, {dashboard.profile?.full_name || "Student"}!
         </h1>
         <p className="text-sm text-slate-500">
-          Here’s a quick overview of your learning progress.
+          Here's a quick overview of your learning progress.
         </p>
       </div>
 
-      {/* STAT CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {initialStats.map((stat) => (
+        {stats.map((stat) => (
           <StatCard key={stat.title} {...stat} />
         ))}
       </div>
 
-      {/* CONTENT */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <AttendanceOverview />
-          <RecentActivity />
+          <AttendanceOverview attendance={attendance} />
+          <RecentActivity activities={activities} />
         </div>
-
         <div className="space-y-6">
-          <CurrentCourses />
+          <CurrentCourses courses={courses} />
         </div>
       </div>
     </main>

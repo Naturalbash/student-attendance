@@ -14,6 +14,7 @@ import ConfirmEmail from "./src/features/auth/pages/confirm";
 /* Admin */
 import AdminAppLayout from "./src/features/Admin/layouts/layout";
 import AdminDashboard from "./src/features/Admin/pages/dashboard-page";
+import AdminStudentsPage from "@/features/Admin/pages/student-page";
 import AttendancePage from "./src/features/Admin/pages/attendance-page";
 import CoursesPage from "./src/features/Admin/pages/courses-page";
 
@@ -25,7 +26,6 @@ import StudentDashboardPage from "./src/features/Student/pages/student-dashboard
 import StudentAttendancePage from "./src/features/Student/pages/attendance-page";
 import MyCoursesPage from "./src/features/Student/pages/courses-page";
 import MyProjectsPage from "./src/features/Student/pages/projects-page";
-import StudentReportsPage from "./src/features/Student/pages/reports-page";
 
 function App() {
   return (
@@ -43,6 +43,7 @@ function App() {
         <Route path="/admin" element={<AdminAppLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="students" element={<AdminStudentsPage />} />
           <Route path="attendance" element={<AttendancePage />} />
           <Route path="courses" element={<CoursesPage />} />
           <Route path="settings" element={<SettingsPage />} />
@@ -55,7 +56,6 @@ function App() {
           <Route path="attendance" element={<StudentAttendancePage />} />
           <Route path="courses" element={<MyCoursesPage />} />
           <Route path="projects" element={<MyProjectsPage />} />
-          <Route path="reports" element={<StudentReportsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Routes>

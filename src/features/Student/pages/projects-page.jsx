@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { FileText, CheckCircle, PlayCircle, Clock } from "lucide-react";
 
-/* =======================
-   MOCK DATA
-======================= */
 const studentProjects = [
   {
     id: 1,
@@ -41,9 +38,6 @@ const studentProjects = [
   },
 ];
 
-/* =======================
-   COMPONENTS
-======================= */
 const ProjectCard = ({ project }) => (
   <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-lg transition">
     {/* Header */}
@@ -109,9 +103,6 @@ const ProjectCard = ({ project }) => (
   </div>
 );
 
-/* =======================
-   MAIN PAGE
-======================= */
 const MyProjectsPage = () => {
   const [projects] = useState(studentProjects);
   const [search, setSearch] = useState("");

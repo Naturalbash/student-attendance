@@ -5,6 +5,7 @@ import {
   FaBook,
   FaUserEdit,
   FaSignOutAlt,
+  FaUserGraduate,
 } from "react-icons/fa";
 import { Link, useLocation } from "react-router-dom";
 import LogoutModal from "../../../components/common/logout-modal";
@@ -14,6 +15,11 @@ const navLinks = [
     label: "Dashboard",
     href: "/admin/dashboard",
     icon: <FaHome className="h-4 w-4" />,
+  },
+  {
+    label: "Students",
+    href: "/admin/students",
+    icon: <FaUserGraduate className="h-4 w-4" />,
   },
   {
     label: "Attendance",
