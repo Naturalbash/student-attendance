@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import supabase from "../../../utils/supabase";
+import { SpinnerDotted } from "spinners-react";
 import {
   Users,
   CheckCircle,
@@ -13,10 +14,6 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-
-/* =======================
-   SMALL UI COMPONENTS
-======================= */
 
 const StatCard = ({ title, value, icon: Icon, accent }) => (
   <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-100 p-6 shadow-sm hover:shadow-lg transition">
@@ -66,10 +63,6 @@ const RecentActivity = ({ activities }) => (
   </div>
 );
 
-/* =======================
-   MAIN PAGE
-======================= */
-
 const AdminDashboardPage = () => {
   const [stats, setStats] = useState({
     students: 0,
@@ -86,10 +79,6 @@ const AdminDashboardPage = () => {
     setLoading(true);
 
     const today = new Date().toISOString().split("T")[0];
-
-    // const {
-    //   data: { user },
-    // } = await supabase.auth.getUser();
 
     /* STUDENTS */
     const { data: students, count: studentCount } = await supabase
@@ -181,10 +170,18 @@ const AdminDashboardPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <p className="text-sm text-slate-500 animate-pulse">
-          Loading dashboard...
-        </p>
+      <div className="min-h-screen w-full flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4 animate-fade-in">
+          <SpinnerDotted
+            size={40}
+            thickness={100}
+            speed={100}
+            color="#4f46e5"
+          />
+          <p className="text-sm text-slate-500 animate-pulse">
+            Loading your dashboard...
+          </p>
+        </div>
       </div>
     );
   }

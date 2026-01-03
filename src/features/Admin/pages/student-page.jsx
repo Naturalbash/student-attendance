@@ -2,9 +2,6 @@ import { useState, useEffect } from "react";
 import supabase from "../../../utils/supabase";
 import { Plus, X, Pencil, Trash2, Loader2 } from "lucide-react";
 
-/* =======================
-   CONFIRM MODAL
-======================= */
 const ConfirmModal = ({ open, title, message, onConfirm, onClose }) => {
   if (!open) return null;
 
@@ -33,9 +30,6 @@ const ConfirmModal = ({ open, title, message, onConfirm, onClose }) => {
   );
 };
 
-/* =======================
-   ADD / EDIT MODAL
-======================= */
 const StudentModal = ({ open, onClose, onSubmit, courses, initial }) => {
   const [form, setForm] = useState(
     initial || { name: "", email: "", courseIds: [] }
@@ -106,9 +100,6 @@ const StudentModal = ({ open, onClose, onSubmit, courses, initial }) => {
   );
 };
 
-/* =======================
-   MAIN PAGE
-======================= */
 const AdminStudentsPage = () => {
   const [students, setStudents] = useState([]);
   const [courses, setCourses] = useState([]);

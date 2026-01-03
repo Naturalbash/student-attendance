@@ -4,6 +4,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 
 /* Auth pages */
 import SignIn from "./src/features/auth/pages/sign-in";
@@ -29,37 +30,40 @@ import MyProjectsPage from "./src/features/Student/pages/projects-page";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Navigate to="/auth/sign-in" replace />} />
+    <>
+      <Toaster position="top-right" reverseOrder={false} />
+      <Router>
+        <Routes>
+          <Route path="/" element={<Navigate to="/auth/sign-in" replace />} />
 
-        {/* Auth routes */}
-        <Route path="/auth/sign-in" element={<SignIn />} />
-        <Route path="/auth/sign-up" element={<SignUp />} />
-        <Route path="/auth/confirm" element={<ConfirmEmail />} />
-        <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+          {/* Auth routes */}
+          <Route path="/auth/sign-in" element={<SignIn />} />
+          <Route path="/auth/sign-up" element={<SignUp />} />
+          <Route path="/auth/confirm" element={<ConfirmEmail />} />
+          <Route path="/auth/forgot-password" element={<ForgotPassword />} />
 
-        {/* Admin routes */}
-        <Route path="/admin" element={<AdminAppLayout />}>
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="students" element={<AdminStudentsPage />} />
-          <Route path="attendance" element={<AttendancePage />} />
-          <Route path="courses" element={<CoursesPage />} />
-          <Route path="settings" element={<SettingsPage />} />
-        </Route>
+          {/* Admin routes */}
+          <Route path="/admin" element={<AdminAppLayout />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="students" element={<AdminStudentsPage />} />
+            <Route path="attendance" element={<AttendancePage />} />
+            <Route path="courses" element={<CoursesPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
 
-        {/* Student routes */}
-        <Route path="/student" element={<StudentAppLayout />}>
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<StudentDashboardPage />} />
-          <Route path="attendance" element={<StudentAttendancePage />} />
-          <Route path="courses" element={<MyCoursesPage />} />
-          <Route path="projects" element={<MyProjectsPage />} />
-          <Route path="settings" element={<SettingsPage />} />
-        </Route>
-      </Routes>
-    </Router>
+          {/* Student routes */}
+          <Route path="/student" element={<StudentAppLayout />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<StudentDashboardPage />} />
+            <Route path="attendance" element={<StudentAttendancePage />} />
+            <Route path="courses" element={<MyCoursesPage />} />
+            <Route path="projects" element={<MyProjectsPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
+        </Routes>
+      </Router>
+    </>
   );
 }
 

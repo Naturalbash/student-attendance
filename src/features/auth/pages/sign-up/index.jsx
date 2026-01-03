@@ -5,6 +5,7 @@ import { BadgeCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import signUpAndCreateProfile from "../../../../utils/auth";
 import { SignUpButton } from "./sign-up-btn";
+import toast from "react-hot-toast";
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -14,20 +15,20 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const togglePasswordVisibility = () => setPasswordVisible((prev) => !prev);
   const [role, setRole] = useState("student");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+
+  const togglePasswordVisibility = () => setPasswordVisible((prev) => !prev);
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError(null);
 
-    if (!name.trim()) return setError("Enter your full name");
-    if (!email) return setError("Enter your email");
+    if (!name.trim()) return toast.error("Enter your full name");
+    if (!email) return toast.error("Enter your email");
     if (password.length < 6)
-      return setError("Password must be at least 6 characters");
-    if (password !== confirmPassword) return setError("Passwords do not match");
+      return toast.error("Password must be at least 6 characters");
+    if (password !== confirmPassword)
+      return toast.error("Passwords do not match");
 
     setLoading(true);
 
@@ -40,11 +41,12 @@ export default function SignUp() {
       });
 
       if (error) {
-        setError(error.message);
+        toast.error(error.message);
         return;
       }
 
       if (needsConfirmation) {
+        toast.success("Account created! Check your email to confirm.");
         navigate(`/auth/confirm?email=${encodeURIComponent(email)}`, {
           replace: true,
         });
@@ -52,11 +54,12 @@ export default function SignUp() {
       }
 
       if (user) {
+        toast.success("Account created successfully 🎉");
         navigate("/", { replace: true });
       }
     } catch (err) {
       console.error(err);
-      setError("Something went wrong");
+      toast.error("Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -85,8 +88,6 @@ export default function SignUp() {
             Create Account
           </h1>
 
-          {error && <p className="text-red-600 text-sm">{error}</p>}
-
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -110,11 +111,7 @@ export default function SignUp() {
               onChange={(e) => setPassword(e.target.value)}
               className="flex-1 outline-none"
             />
-            <button
-              type="button"
-              onClick={togglePasswordVisibility}
-              className="ml-2"
-            >
+            <button type="button" onClick={togglePasswordVisibility}>
               {passwordVisible ? <FaEye /> : <IoMdEyeOff />}
             </button>
           </div>
