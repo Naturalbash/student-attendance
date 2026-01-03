@@ -139,7 +139,7 @@ const AdminStudentsPage = () => {
     const { data: studentsData } = await supabase
       .from("profiles")
       .select(
-        "id, full_name, email, created_at, student_courses(course_id, progress)"
+        "id, full_name, email, created_at, student_courses(course_id, course_name, progress)"
       )
       .eq("role", "student");
 
@@ -175,13 +175,26 @@ const AdminStudentsPage = () => {
     });
 
     if (courseIds.length) {
-      await supabase.from("student_courses").insert(
-        courseIds.map((cid) => ({
+      const mappedCourses = courseIds.map((cid) => {
+        const course = courses.find((c) => c.id === cid);
+
+        return {
           student_id: userId,
           course_id: cid,
+          course_name: course?.name || "",
           progress: 0,
-        }))
-      );
+        };
+      });
+
+      const { error } = await supabase
+        .from("student_courses")
+        .insert(mappedCourses);
+
+      if (error) {
+        console.error(error);
+        alert("Failed to assign courses");
+        return;
+      }
     }
 
     await logActivity(`You Added new student "${name}"`);
@@ -203,13 +216,18 @@ const AdminStudentsPage = () => {
       .eq("student_id", editTarget.id);
 
     if (courseIds.length) {
-      await supabase.from("student_courses").insert(
-        courseIds.map((cid) => ({
+      const mappedCourses = courseIds.map((cid) => {
+        const course = courses.find((c) => c.id === cid);
+
+        return {
           student_id: editTarget.id,
           course_id: cid,
+          course_name: course?.name || "",
           progress: 0,
-        }))
-      );
+        };
+      });
+
+      await supabase.from("student_courses").insert(mappedCourses);
     }
 
     await logActivity(`You Edited student "${name}"`);
@@ -265,43 +283,52 @@ const AdminStudentsPage = () => {
               </tr>
             </thead>
             <tbody>
-              {students.map((s) => (
-                <tr key={s.id} className="border-t hover:bg-slate-50">
-                  <td className="px-4 py-2">{s.full_name}</td>
-                  <td className="px-4 py-2">{s.email}</td>
-                  <td className="px-4 py-2">
-                    {s.student_courses
-                      ?.map(
-                        (sc) => courses.find((c) => c.id === sc.course_id)?.name
-                      )
-                      .join(", ") || "—"}
-                  </td>
-                  <td className="px-4 py-2">
-                    {new Date(s.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-2 flex justify-center gap-3">
-                    <button
-                      onClick={() =>
-                        setEditTarget({
-                          ...s,
-                          courseIds: s.student_courses.map(
-                            (sc) => sc.course_id
-                          ),
-                        })
-                      }
-                      className="text-indigo-600 hover:text-indigo-800"
-                    >
-                      <Pencil size={16} />
-                    </button>
-                    <button
-                      onClick={() => setDeleteTarget(s)}
-                      className="text-rose-600 hover:text-rose-800"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+              {students.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="5"
+                    className="px-4 py-10 text-center text-slate-500"
+                  >
+                    No students have been added yet.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                students.map((s) => (
+                  <tr key={s.id} className="border-t hover:bg-slate-50">
+                    <td className="px-4 py-2">{s.full_name}</td>
+                    <td className="px-4 py-2">{s.email}</td>
+                    <td className="px-4 py-2">
+                      {s.student_courses
+                        ?.map((sc) => sc.course_name)
+                        .join(", ") || "—"}
+                    </td>
+                    <td className="px-4 py-2">
+                      {new Date(s.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-2 flex justify-center gap-3">
+                      <button
+                        onClick={() =>
+                          setEditTarget({
+                            ...s,
+                            courseIds: s.student_courses.map(
+                              (sc) => sc.course_id
+                            ),
+                          })
+                        }
+                        className="text-indigo-600 hover:text-indigo-800"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        onClick={() => setDeleteTarget(s)}
+                        className="text-rose-600 hover:text-rose-800"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

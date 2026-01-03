@@ -1,60 +1,131 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlusCircle, Search, Users, Save, Edit, X } from "lucide-react";
+import supabase from "../../../utils/supabase";
+import toast, { Toaster } from "react-hot-toast"; // import react-hot-toast
 
-/* =======================
-   MOCK DATA
-======================= */
-const initialCourses = [
-  { id: 1, name: "Web Development", students: 28 },
-  { id: 2, name: "Graphic Design", students: 22 },
-  { id: 3, name: "UI/UX Design", students: 18 },
-  { id: 4, name: "Data Science", students: 12 },
-  { id: 5, name: "Digital Marketing", students: 20 },
-];
-
-/* =======================
-   MAIN PAGE
-======================= */
 const CoursesPage = () => {
-  const [courses, setCourses] = useState(initialCourses);
+  const [courses, setCourses] = useState([]);
   const [search, setSearch] = useState("");
   const [newCourseName, setNewCourseName] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState("");
 
+  /* =======================
+     FETCH COURSES WITH STUDENT COUNT
+  ======================= */
+  const fetchCourses = async () => {
+    try {
+      const { data: coursesData, error: coursesError } = await supabase
+        .from("courses")
+        .select("id, name, created_at");
+
+      if (coursesError) throw coursesError;
+
+      // get student counts per course
+      const { data: studentCourses } = await supabase
+        .from("student_courses")
+        .select("course_id");
+
+      const formattedCourses = coursesData.map((c) => {
+        const count = studentCourses?.filter(
+          (sc) => sc.course_id === c.id
+        )?.length;
+        return { ...c, students: count || 0 };
+      });
+
+      setCourses(formattedCourses);
+    } catch (err) {
+      console.error("Fetch courses error:", err);
+      toast.error("Failed to load courses!");
+    }
+  };
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
   const filteredCourses = courses.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleAddCourse = () => {
-    if (!newCourseName.trim()) {
-      alert("Please enter a course name.");
-      return;
-    }
-    const newCourse = {
-      id: Date.now(),
-      name: newCourseName,
-      students: 0,
-    };
-    setCourses([newCourse, ...courses]);
-    setNewCourseName("");
+  /* =======================
+     LOG ACTIVITY
+  ======================= */
+  const logActivity = async (action) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    await supabase.from("activity_logs").insert({
+      user_id: user.id,
+      user_name: user.email,
+      action,
+    });
   };
 
+  /* =======================
+     ADD COURSE
+  ======================= */
+  const handleAddCourse = async () => {
+    if (!newCourseName.trim()) {
+      toast.error("Please enter a course name.");
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("courses")
+      .insert([{ name: newCourseName }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Add course error:", error);
+      toast.error("Failed to create course");
+      return;
+    }
+
+    setCourses([{ ...data, students: 0 }, ...courses]);
+    setNewCourseName("");
+    toast.success(`Course "${data.name}" added successfully!`);
+
+    await logActivity(`Created course "${data.name}"`);
+  };
+
+  /* =======================
+     EDIT COURSE
+  ======================= */
   const handleEdit = (course) => {
     setEditingId(course.id);
     setEditName(course.name);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editName.trim()) {
-      alert("Course name cannot be empty.");
+      toast.error("Course name cannot be empty.");
       return;
     }
+
+    const { error } = await supabase
+      .from("courses")
+      .update({ name: editName })
+      .eq("id", editingId);
+
+    if (error) {
+      console.error("Update course error:", error);
+      toast.error("Failed to update course");
+      return;
+    }
+
     setCourses(
       courses.map((c) => (c.id === editingId ? { ...c, name: editName } : c))
     );
+    toast.success("Course name updated!");
     setEditingId(null);
     setEditName("");
+
+    await logActivity(`Updated course name to "${editName}"`);
   };
 
   const handleCancel = () => {
@@ -62,8 +133,37 @@ const CoursesPage = () => {
     setEditName("");
   };
 
+  /* =======================
+     DELETE COURSE
+  ======================= */
+  const handleDelete = async (course) => {
+    const confirm = window.confirm(
+      `Are you sure you want to delete the course "${course.name}"?`
+    );
+    if (!confirm) return;
+
+    const { error } = await supabase
+      .from("courses")
+      .delete()
+      .eq("id", course.id);
+
+    if (error) {
+      console.error("Delete course error:", error);
+      toast.error("Failed to delete course!");
+      return;
+    }
+
+    setCourses(courses.filter((c) => c.id !== course.id));
+    toast.success(`Course "${course.name}" deleted successfully!`);
+
+    await logActivity(`Deleted course "${course.name}"`);
+  };
+
   return (
     <main className="min-h-screen w-full bg-slate-50 p-6 space-y-6">
+      {/* TOASTER */}
+      <Toaster position="top-right" reverseOrder={false} />
+
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -156,12 +256,20 @@ const CoursesPage = () => {
                       </button>
                     </div>
                   ) : (
-                    <button
-                      onClick={() => handleEdit(course)}
-                      className="rounded-xl bg-indigo-600 px-3 py-1.5 text-xs text-white hover:bg-indigo-700 active:scale-95 transition"
-                    >
-                      <Edit size={14} />
-                    </button>
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        onClick={() => handleEdit(course)}
+                        className="rounded-xl bg-indigo-600 px-3 py-1.5 text-xs text-white hover:bg-indigo-700 active:scale-95 transition"
+                      >
+                        <Edit size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(course)}
+                        className="rounded-xl bg-rose-600 px-3 py-1.5 text-xs text-white hover:bg-rose-700 active:scale-95 transition"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
                   )}
                 </td>
               </tr>
