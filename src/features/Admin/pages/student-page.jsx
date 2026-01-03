@@ -66,6 +66,7 @@ const StudentModal = ({ open, onClose, onSubmit, courses, initial }) => {
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             className="w-full rounded-xl border px-4 py-2"
           />
+
           {!initial && (
             <input
               placeholder="Email"
@@ -116,6 +117,21 @@ const AdminStudentsPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  /* ========= ACTIVITY LOGGER ========= */
+  const logActivity = async (action) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    await supabase.from("activity_logs").insert({
+      user_id: user.id,
+      user_name: user.email,
+      action,
+    });
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -168,6 +184,8 @@ const AdminStudentsPage = () => {
       );
     }
 
+    await logActivity(`You Added new student "${name}"`);
+
     fetchData();
     setModalOpen(false);
   };
@@ -194,6 +212,8 @@ const AdminStudentsPage = () => {
       );
     }
 
+    await logActivity(`You Edited student "${name}"`);
+
     fetchData();
     setEditTarget(null);
   };
@@ -206,6 +226,10 @@ const AdminStudentsPage = () => {
       .eq("student_id", deleteTarget.id);
 
     await supabase.from("profiles").delete().eq("id", deleteTarget.id);
+
+    await logActivity(
+      `You Deleted "${deleteTarget.full_name}" from the students`
+    );
 
     fetchData();
     setDeleteTarget(null);

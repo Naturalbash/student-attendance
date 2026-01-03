@@ -9,7 +9,10 @@ import {
   UserPlus,
   ClipboardCheck,
   Layers,
+  Clock,
+  AlertCircle,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 /* =======================
    SMALL UI COMPONENTS
@@ -84,23 +87,22 @@ const AdminDashboardPage = () => {
 
     const today = new Date().toISOString().split("T")[0];
 
-    /* ========= CURRENT USER ========= */
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    // const {
+    //   data: { user },
+    // } = await supabase.auth.getUser();
 
-    /* ========= STUDENTS ========= */
+    /* STUDENTS */
     const { data: students, count: studentCount } = await supabase
       .from("profiles")
       .select("id", { count: "exact" })
       .eq("role", "student");
 
-    /* ========= COURSES ========= */
+    /* COURSES */
     const { count: courseCount } = await supabase
       .from("courses")
       .select("id", { count: "exact", head: true });
 
-    /* ========= ATTENDANCE TODAY ========= */
+    /* ATTENDANCE TODAY */
     const { data: attendanceToday } = await supabase
       .from("attendance")
       .select("status")
@@ -112,15 +114,7 @@ const AdminDashboardPage = () => {
     const absentToday =
       attendanceToday?.filter((a) => a.status === "absent").length || 0;
 
-    /* ========= LAST ATTENDANCE ========= */
-    const { data: lastAttendance } = await supabase
-      .from("attendance")
-      .select("created_at")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
-
-    /* ========= UNASSIGNED STUDENTS ========= */
+    /* UNASSIGNED STUDENTS */
     const { data: assigned } = await supabase
       .from("student_courses")
       .select("student_id");
@@ -129,13 +123,22 @@ const AdminDashboardPage = () => {
     const unassignedCount =
       students?.filter((s) => !assignedIds.has(s.id)).length || 0;
 
-    /* ========= ACTIVITY LOGS ========= */
+    /* ACTIVITY LOGS */
     const { data: recentActivities } = await supabase
       .from("activity_logs")
       .select("id, user_name, action, created_at")
-      .eq("user_id", user?.id)
       .order("created_at", { ascending: false })
       .limit(6);
+
+    /* LAST ATTENDANCE FROM LOG */
+    const lastAttendanceLog = recentActivities?.find((a) =>
+      a.action.toLowerCase().includes("attendance")
+    );
+
+    const attendanceMarkedToday =
+      lastAttendanceLog &&
+      new Date(lastAttendanceLog.created_at).toISOString().split("T")[0] ===
+        today;
 
     setStats({
       students: studentCount || 0,
@@ -145,13 +148,13 @@ const AdminDashboardPage = () => {
     });
 
     setSystemStatus([
-      attendanceToday?.length
+      attendanceMarkedToday
         ? "Attendance marked today"
         : "Attendance not marked today",
       `${unassignedCount} students not assigned to any course`,
-      lastAttendance
+      lastAttendanceLog
         ? `Last attendance marked at ${new Date(
-            lastAttendance.created_at
+            lastAttendanceLog.created_at
           ).toLocaleTimeString()}`
         : "No attendance has been marked yet",
     ]);
@@ -160,28 +163,20 @@ const AdminDashboardPage = () => {
     setLoading(false);
   };
 
-  /* ========= REALTIME ACTIVITY LISTENER ========= */
+  /* REALTIME LISTENER */
   useEffect(() => {
     fetchDashboardData();
 
     const channel = supabase
-      .channel("activity-log-realtime")
+      .channel("dashboard-realtime")
       .on(
         "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "activity_logs",
-        },
-        (payload) => {
-          setActivities((prev) => [payload.new, ...prev].slice(0, 6));
-        }
+        { event: "INSERT", schema: "public", table: "activity_logs" },
+        () => fetchDashboardData()
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => supabase.removeChannel(channel);
   }, []);
 
   if (loading) {
@@ -206,7 +201,7 @@ const AdminDashboardPage = () => {
         </p>
       </div>
 
-      {/* STATS GRID */}
+      {/* STATS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
         <StatCard
           title="Total Students"
@@ -234,30 +229,54 @@ const AdminDashboardPage = () => {
         />
       </div>
 
-      {/* CONTENT GRID */}
+      {/* CONTENT */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <RecentActivity activities={activities} />
         </div>
 
         <div className="rounded-2xl bg-white border border-slate-100 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-semibold text-slate-800">
               System Status
             </h3>
 
-            <div className="flex items-center gap-3 text-slate-500">
-              <UserPlus size={18} />
-              <Layers size={18} />
-              <ClipboardCheck size={18} />
+            <div className="flex items-center gap-4 text-slate-500">
+              <Link to="/admin/students">
+                <UserPlus size={18} />
+              </Link>
+              <Link to="/admin/courses">
+                <Layers size={18} />
+              </Link>
+              <Link to="/admin/attendance">
+                <ClipboardCheck size={18} />
+              </Link>
             </div>
           </div>
 
-          <ul className="text-sm text-slate-500 space-y-2 leading-relaxed">
-            {systemStatus.map((status, index) => (
-              <li key={index}>• {status}</li>
-            ))}
-          </ul>
+          <div className="space-y-3 text-sm">
+            <div className="flex items-start gap-3">
+              <AlertCircle
+                size={16}
+                className={
+                  systemStatus[0].includes("not")
+                    ? "text-rose-500"
+                    : "text-emerald-500"
+                }
+              />
+              <span>{systemStatus[0]}</span>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Users size={16} className="text-amber-500" />
+              <span>{systemStatus[1]}</span>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Clock size={16} className="text-slate-400" />
+              <span>{systemStatus[2]}</span>
+            </div>
+          </div>
         </div>
       </div>
     </main>

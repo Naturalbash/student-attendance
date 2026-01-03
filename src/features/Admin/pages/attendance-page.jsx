@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import supabase from "../../../utils/supabase";
 import {
   CheckCircle,
   XCircle,
@@ -6,88 +7,154 @@ import {
   Save,
   Calendar,
   PlusCircle,
+  Loader2,
 } from "lucide-react";
 
-/* =======================
-   MOCK DATA
-======================= */
-const initialStudents = [
-  { id: 1, name: "Ojo Henry", course: "Web Development" },
-  { id: 2, name: "Sunday Tobi", course: "Graphic Design" },
-  { id: 3, name: "Abdullah Mubaraq", course: "UI/UX Design" },
-  { id: 4, name: "Sarah Wilson", course: "Data Science" },
-  { id: 5, name: "Tajudeen Malik", course: "Digital Marketing" },
-];
-
-const courses = [
-  "Web Development",
-  "Graphic Design",
-  "UI/UX Design",
-  "Data Science",
-  "Digital Marketing",
-  "Digital Illustration",
-  "Frontend Development",
-];
-
-/* =======================
-   COMPONENT
-======================= */
 const AttendancePage = () => {
-  const [students, setStudents] = useState(initialStudents);
+  const [students, setStudents] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [attendance, setAttendance] = useState({});
   const [search, setSearch] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const [newStudent, setNewStudent] = useState({ name: "", course: "" });
+  const [assignForm, setAssignForm] = useState({
+    studentId: "",
+    courseId: "",
+  });
 
-  /* Initialize attendance */
+  /* =======================
+     ACTIVITY LOGGER
+  ======================= */
+  const logActivity = async (action) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    await supabase.from("activity_logs").insert({
+      user_id: user.id,
+      user_name: user.email,
+      action,
+    });
+  };
+
+  /* =======================
+     FETCH DATA
+  ======================= */
+  const fetchData = async () => {
+    setLoading(true);
+
+    const { data: studentsData } = await supabase
+      .from("profiles")
+      .select("id, full_name, student_courses(course_id, courses(name))")
+      .eq("role", "student");
+
+    const { data: coursesData } = await supabase
+      .from("courses")
+      .select("id, name");
+
+    const { data: attendanceData } = await supabase
+      .from("attendance")
+      .select("student_id, status")
+      .eq("attendance_date", date);
+
+    const initialAttendance = {};
+    attendanceData?.forEach((a) => {
+      initialAttendance[a.student_id] = a.status;
+    });
+
+    studentsData?.forEach((s) => {
+      if (!initialAttendance[s.id]) {
+        initialAttendance[s.id] = "present";
+      }
+    });
+
+    setStudents(studentsData || []);
+    setCourses(coursesData || []);
+    setAttendance(initialAttendance);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const initial = {};
-    students.forEach((s) => (initial[s.id] = "present"));
-    setAttendance(initial);
-  }, [students]);
+    fetchData();
+  }, [date]);
 
-  /* Toggle present/absent */
-  const toggleAttendance = (id) => {
+  /* =======================
+     TOGGLE ATTENDANCE
+  ======================= */
+  const toggleAttendance = (studentId) => {
     setAttendance((prev) => ({
       ...prev,
-      [id]: prev[id] === "present" ? "absent" : "present",
+      [studentId]: prev[studentId] === "present" ? "absent" : "present",
     }));
   };
 
-  /* Filter students */
-  const filteredStudents = students.filter(
-    (s) =>
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.course.toLowerCase().includes(search.toLowerCase())
+  /* =======================
+     SAVE ATTENDANCE
+  ======================= */
+  const handleSaveAttendance = async () => {
+    setSaving(true);
+
+    const records = Object.entries(attendance).map(([student_id, status]) => ({
+      student_id,
+      attendance_date: date,
+      status,
+    }));
+
+    await supabase.from("attendance").upsert(records, {
+      onConflict: "student_id,attendance_date",
+    });
+
+    await logActivity("Marked attendance");
+
+    setSaving(false);
+  };
+
+  /* =======================
+     ASSIGN STUDENT TO COURSE
+  ======================= */
+  const handleAssignStudent = async () => {
+    if (!assignForm.studentId || !assignForm.courseId) return;
+
+    await supabase.from("student_courses").insert({
+      student_id: assignForm.studentId,
+      course_id: assignForm.courseId,
+      progress: 0,
+    });
+
+    const student = students.find((s) => s.id === assignForm.studentId);
+    const course = courses.find((c) => c.id === assignForm.courseId);
+
+    await logActivity(`Assigned ${student?.full_name} to ${course?.name}`);
+
+    setAssignForm({ studentId: "", courseId: "" });
+    fetchData();
+  };
+
+  /* =======================
+     FILTER
+  ======================= */
+  const filteredStudents = students.filter((s) =>
+    s.full_name.toLowerCase().includes(search.toLowerCase())
   );
 
   const presentCount = Object.values(attendance).filter(
     (s) => s === "present"
   ).length;
 
-  /* Save attendance */
-  const handleSaveAttendance = () => {
-    setSaving(true);
-    setTimeout(() => {
-      console.log("Attendance Saved:", { date, attendance });
-      setSaving(false);
-      alert("Attendance saved successfully!");
-    }, 1200);
-  };
-
-  /* Add new student */
-  const handleAddStudent = () => {
-    if (!newStudent.name || !newStudent.course) {
-      alert("Please enter both name and course.");
-      return;
-    }
-    const newId = Date.now();
-    setStudents((prev) => [...prev, { id: newId, ...newStudent }]);
-    setAttendance((prev) => ({ ...prev, [newId]: "present" }));
-    setNewStudent({ name: "", course: "" });
-  };
+  /* =======================
+     UI
+  ======================= */
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <Loader2 className="animate-spin text-slate-400" />
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen w-full bg-slate-50 p-6 space-y-6">
@@ -96,7 +163,7 @@ const AttendancePage = () => {
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">Attendance</h1>
           <p className="text-sm text-slate-500">
-            Mark and manage daily student attendance for digital skills courses
+            Mark and manage daily student attendance
           </p>
         </div>
 
@@ -106,28 +173,26 @@ const AttendancePage = () => {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+            className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
           />
         </div>
       </div>
 
-      {/* SUMMARY CARDS */}
+      {/* SUMMARY */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+        <div className="bg-white rounded-2xl p-4 border shadow-sm">
           <p className="text-sm text-slate-500">Total Students</p>
-          <p className="text-2xl font-semibold text-slate-900">
-            {students.length}
-          </p>
+          <p className="text-2xl font-semibold">{students.length}</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+        <div className="bg-white rounded-2xl p-4 border shadow-sm">
           <p className="text-sm text-slate-500">Present</p>
           <p className="text-2xl font-semibold text-emerald-600">
             {presentCount}
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+        <div className="bg-white rounded-2xl p-4 border shadow-sm">
           <p className="text-sm text-slate-500">Absent</p>
           <p className="text-2xl font-semibold text-rose-600">
             {students.length - presentCount}
@@ -142,75 +207,83 @@ const AttendancePage = () => {
           className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
         />
         <input
-          placeholder="Search student or course..."
+          placeholder="Search student..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-10 pr-4 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          className="w-full rounded-xl border bg-white py-2 pl-10 pr-4 text-sm"
         />
       </div>
 
-      {/* ADD STUDENT FORM */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 max-w-md space-y-4">
-        <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-          <PlusCircle size={20} /> Add Student to Course
+      {/* ASSIGN STUDENT */}
+      <div className="bg-white rounded-2xl border shadow-sm p-6 max-w-md space-y-4">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <PlusCircle size={20} /> Assign Student to Course
         </h2>
-        <input
-          type="text"
-          placeholder="Student Full Name"
-          value={newStudent.name}
-          onChange={(e) =>
-            setNewStudent({ ...newStudent, name: e.target.value })
-          }
-          className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
-        />
+
         <select
-          value={newStudent.course}
+          value={assignForm.studentId}
           onChange={(e) =>
-            setNewStudent({ ...newStudent, course: e.target.value })
+            setAssignForm({ ...assignForm, studentId: e.target.value })
           }
-          className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+          className="w-full rounded-xl border px-4 py-2 text-sm"
         >
-          <option value="">Select Course</option>
-          {courses.map((c) => (
-            <option key={c} value={c}>
-              {c}
+          <option value="">Select Student</option>
+          {students.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.full_name}
             </option>
           ))}
         </select>
-        <button
-          onClick={handleAddStudent}
-          className="w-full rounded-xl bg-indigo-600 py-2 text-white font-medium transition hover:bg-indigo-700 active:scale-95"
+
+        <select
+          value={assignForm.courseId}
+          onChange={(e) =>
+            setAssignForm({ ...assignForm, courseId: e.target.value })
+          }
+          className="w-full rounded-xl border px-4 py-2 text-sm"
         >
-          Add Student
+          <option value="">Select Course</option>
+          {courses.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+
+        <button
+          onClick={handleAssignStudent}
+          className="w-full rounded-xl bg-indigo-600 py-2 text-white font-medium hover:bg-indigo-700"
+        >
+          Assign Student
         </button>
       </div>
 
-      {/* ATTENDANCE TABLE */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      {/* TABLE */}
+      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 border-b">
-            <tr className="text-left text-slate-500">
-              <th className="py-3 px-4">Student Name</th>
-              <th className="py-3 px-4">Course</th>
-              <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4 text-right">Action</th>
+          <thead className="bg-slate-100 text-slate-600">
+            <tr>
+              <th className="px-4 py-3 text-left">Student</th>
+              <th className="px-4 py-3 text-left">Course</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3 text-right">Action</th>
             </tr>
           </thead>
           <tbody>
-            {filteredStudents.map((student) => {
-              const status = attendance[student.id];
+            {filteredStudents.map((s) => {
+              const status = attendance[s.id];
+              const course = s.student_courses?.[0]?.courses?.name || "—";
+
               return (
                 <tr
-                  key={student.id}
-                  className="border-b last:border-none hover:bg-slate-50 transition"
+                  key={s.id}
+                  className="border-t hover:bg-slate-50 transition"
                 >
-                  <td className="py-3 px-4 font-medium text-slate-800">
-                    {student.name}
-                  </td>
-                  <td className="py-3 px-4 text-slate-500">{student.course}</td>
-                  <td className="py-3 px-4">
+                  <td className="px-4 py-3 font-medium">{s.full_name}</td>
+                  <td className="px-4 py-3 text-slate-500">{course}</td>
+                  <td className="px-4 py-3 text-center">
                     <span
-                      className={`rounded-full px-3 py-1 text-xs font-medium ${
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
                         status === "present"
                           ? "bg-emerald-100 text-emerald-700"
                           : "bg-rose-100 text-rose-700"
@@ -219,22 +292,22 @@ const AttendancePage = () => {
                       {status}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-right">
+                  <td className="px-4 py-3 text-right">
                     <button
-                      onClick={() => toggleAttendance(student.id)}
-                      className={`inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-medium transition active:scale-95 ${
+                      onClick={() => toggleAttendance(s.id)}
+                      className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium text-white ${
                         status === "present"
-                          ? "bg-rose-600 text-white hover:bg-rose-700"
-                          : "bg-emerald-600 text-white hover:bg-emerald-700"
+                          ? "bg-rose-600 hover:bg-rose-700"
+                          : "bg-emerald-600 hover:bg-emerald-700"
                       }`}
                     >
                       {status === "present" ? (
                         <>
-                          <XCircle size={14} /> Mark Absent
+                          <XCircle size={14} /> Absent
                         </>
                       ) : (
                         <>
-                          <CheckCircle size={14} /> Mark Present
+                          <CheckCircle size={14} /> Present
                         </>
                       )}
                     </button>
@@ -246,12 +319,12 @@ const AttendancePage = () => {
         </table>
       </div>
 
-      {/* SAVE BUTTON */}
+      {/* SAVE */}
       <div className="flex justify-end">
         <button
           onClick={handleSaveAttendance}
           disabled={saving}
-          className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-indigo-700 active:scale-95 disabled:opacity-50"
+          className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm text-white hover:bg-indigo-700 disabled:opacity-50"
         >
           <Save size={16} />
           {saving ? "Saving..." : "Save Attendance"}
