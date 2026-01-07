@@ -3,6 +3,7 @@ import supabase from "../../../utils/supabase";
 import { BookOpen, CheckCircle, PlayCircle, Loader2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { logActivity } from "../../../utils/activity-logger";
 
 /* ========================= CONGRATS MODAL ========================= */
 const CongratsModal = ({ open, courseTitle, onClose }) => {
@@ -76,22 +77,16 @@ const MyCoursesPage = () => {
             .eq("course_id", sc.course_id)
             .order("created_at", { ascending: true });
 
-          const { data: completed } = await supabase
-            .from("student_course_syllabus")
-            .select("syllabus_id, completed")
-            .eq("student_id", auth.user.id)
-            .eq("course_id", sc.course_id);
+          // Calculate completed based on stored progress
+          const totalSyllabus = syllabus.length;
+          const completedCount = Math.round(
+            (sc.progress / 100) * totalSyllabus
+          );
 
-          const mergedSyllabus = syllabus.map((s) => ({
+          const mergedSyllabus = syllabus.map((s, index) => ({
             ...s,
-            completed: completed?.some(
-              (c) => c.syllabus_id === s.id && c.completed
-            ),
+            completed: index < completedCount,
           }));
-
-          const total = mergedSyllabus.length;
-          const done = mergedSyllabus.filter((s) => s.completed).length;
-          const progress = total > 0 ? Math.round((done / total) * 100) : 0;
 
           return {
             student_course_id: sc.id,
@@ -99,7 +94,7 @@ const MyCoursesPage = () => {
             name: courseInfo.name,
             description: courseInfo.description || "No description available",
             syllabus: mergedSyllabus,
-            progress,
+            progress: sc.progress || 0,
           };
         })
       );
@@ -126,6 +121,11 @@ const MyCoursesPage = () => {
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "student_course_syllabus" },
+          fetchCourses
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "student_courses" },
           fetchCourses
         )
         .on(
@@ -180,12 +180,11 @@ const MyCoursesPage = () => {
       );
 
       // Log activity
-      await supabase.from("activity_logs").insert({
-        student_id: auth.user.id,
-        action: `${syllabusItem.title} marked ${
+      await logActivity(
+        `${syllabusItem.title} marked ${
           newCompleted ? "complete" : "incomplete"
-        }`,
-      });
+        }`
+      );
 
       toast.success(
         `"${syllabusItem.title}" marked ${
@@ -198,13 +197,6 @@ const MyCoursesPage = () => {
       console.error(err);
       toast.error("Failed to update syllabus");
     }
-  };
-
-  /* ========================= COMPLETE NEXT MODULE ========================= */
-  const completeNextModule = (course) => {
-    const nextModule = course.syllabus.find((s) => !s.completed);
-    if (nextModule) toggleSyllabus(course, nextModule);
-    else toast.success("All modules completed!");
   };
 
   /* ========================= SEARCH FILTER ========================= */
@@ -246,112 +238,119 @@ const MyCoursesPage = () => {
 
       {/* Courses */}
       {loading ? (
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="bg-white rounded-3xl border border-slate-100 p-6 shadow-md animate-pulse h-72"
-            />
-          ))}
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-3xl border border-slate-100 p-6 shadow-md animate-pulse h-72"
+              />
+            ))}
+          </div>
         </div>
       ) : filteredCourses.length === 0 ? (
         <p className="text-slate-500">No courses found.</p>
       ) : (
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredCourses.map((course) => {
-            const nextModule = course.syllabus.find((s) => !s.completed);
-            return (
-              <div
-                key={course.course_id}
-                className="bg-white rounded-3xl p-6 shadow-md border border-slate-100 flex flex-col"
-              >
-                {/* header */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="text-indigo-600" />
-                    <h3 className="font-semibold text-slate-900">
-                      {course.name}
-                    </h3>
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {filteredCourses.map((course) => {
+              const nextModule = course.syllabus.find((s) => !s.completed);
+              return (
+                <div
+                  key={course.course_id}
+                  className="bg-white rounded-3xl p-6 shadow-md border border-slate-100 flex flex-col"
+                >
+                  {/* header */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="text-indigo-600" />
+                      <h3 className="font-semibold text-slate-900">
+                        {course.name}
+                      </h3>
+                    </div>
+                    <span className="text-sm font-medium text-indigo-600">
+                      {course.progress}%
+                    </span>
                   </div>
-                  <span className="text-sm font-medium text-indigo-600">
-                    {course.progress}%
-                  </span>
-                </div>
 
-                {/* progress bar */}
-                <div className="h-2 bg-slate-200 rounded-full mb-4">
-                  <div
-                    className="h-2 bg-indigo-600 rounded-full transition-all"
-                    style={{ width: `${course.progress}%` }}
-                  />
-                </div>
+                  {/* progress bar */}
+                  <div className="h-2 bg-slate-200 rounded-full mb-4">
+                    <div
+                      className="h-2 bg-indigo-600 rounded-full transition-all"
+                      style={{ width: `${course.progress}%` }}
+                    />
+                  </div>
 
-                {/* description */}
-                <p className="text-sm text-slate-500 mb-4">
-                  {course.description}
-                </p>
+                  {/* description */}
+                  <p className="text-sm text-slate-500 mb-4">
+                    {course.description}
+                  </p>
 
-                {/* syllabus */}
-                <ul className="space-y-3 flex-1">
-                  {course.syllabus.map((s) => {
-                    const isNext = nextModule && nextModule.id === s.id;
-                    return (
-                      <motion.li
-                        key={s.id}
-                        className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition ${
-                          s.completed
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-slate-50 hover:bg-slate-100"
-                        } ${
-                          isNext && !s.completed
-                            ? "border border-indigo-300 shadow-sm"
-                            : ""
-                        }`}
-                        onClick={() => toggleSyllabus(course, s)}
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 5 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <span className="text-sm font-medium">
-                          {s.title}
-                          {isNext && !s.completed && (
-                            <span className="ml-2 text-xs text-indigo-600 font-normal">
-                              (Next)
-                            </span>
+                  {/* syllabus */}
+                  <ul className="space-y-3 flex-1">
+                    {course.syllabus.map((s) => {
+                      const isNext = nextModule && nextModule.id === s.id;
+                      return (
+                        <motion.li
+                          key={s.id}
+                          className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition ${
+                            s.completed
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-slate-50 hover:bg-slate-100"
+                          } ${
+                            isNext && !s.completed
+                              ? "border border-indigo-300 shadow-sm"
+                              : ""
+                          }`}
+                          onClick={() => toggleSyllabus(course, s)}
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 5 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <span className="text-sm font-medium">
+                            {s.title}
+                            {isNext && !s.completed && (
+                              <span className="ml-2 text-xs text-indigo-600 font-normal">
+                                (Next)
+                              </span>
+                            )}
+                          </span>
+                          {s.completed ? (
+                            <CheckCircle
+                              className="text-emerald-500"
+                              size={18}
+                            />
+                          ) : (
+                            <PlayCircle className="text-slate-400" size={18} />
                           )}
-                        </span>
-                        {s.completed ? (
-                          <CheckCircle className="text-emerald-500" size={18} />
-                        ) : (
-                          <PlayCircle className="text-slate-400" size={18} />
-                        )}
-                      </motion.li>
-                    );
-                  })}
-                </ul>
+                        </motion.li>
+                      );
+                    })}
+                  </ul>
 
-                {/* Animated Call-to-action button */}
-                {nextModule && (
-                  <motion.button
-                    key={nextModule.id}
-                    initial={{ scale: 0.95, opacity: 0.8 }}
-                    animate={{ scale: [1, 1.05, 1], opacity: 1 }}
-                    transition={{
-                      duration: 0.8,
-                      repeat: 1,
-                      repeatType: "mirror",
-                      ease: "easeInOut",
-                    }}
-                    onClick={() => completeNextModule(course)}
-                    className="mt-4 w-full bg-indigo-600 text-white py-2 rounded-xl font-medium hover:bg-indigo-700 transition"
-                  >
-                    Continue to "{nextModule.title}"
-                  </motion.button>
-                )}
-              </div>
-            );
-          })}
+                  {/* Animated Call-to-action button */}
+                  {nextModule && (
+                    <motion.button
+                      key={nextModule.id}
+                      initial={{ scale: 0.95, opacity: 0.8 }}
+                      animate={{ scale: [1, 1.05, 1], opacity: 1 }}
+                      transition={{
+                        duration: 0.8,
+                        repeat: 1,
+                        repeatType: "mirror",
+                        ease: "easeInOut",
+                      }}
+                      onClick={() => toggleSyllabus(course, nextModule)}
+                      className="mt-4 w-full bg-indigo-600 text-white py-2 rounded-xl font-medium hover:bg-indigo-700 transition"
+                    >
+                      Continue to "{nextModule.title}"
+                    </motion.button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

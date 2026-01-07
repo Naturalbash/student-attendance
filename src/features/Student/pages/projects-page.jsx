@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { logActivity } from "../../../utils/activity-logger";
 
 /* =========================
    CONGRATS MODAL
@@ -131,6 +132,9 @@ const StudentProjectsPage = () => {
 
       if (createErr) throw createErr;
 
+      // Log activity
+      await logActivity(`Created project "${newProjectName}"`);
+
       toast.success("Project created!");
       setNewProjectName("");
       setNewProjectDesc("");
@@ -176,6 +180,11 @@ const StudentProjectsPage = () => {
         )
       );
 
+      // Log activity
+      await logActivity(
+        `"${task.title}" marked ${newCompleted ? "complete" : "incomplete"}`
+      );
+
       toast.success(
         `"${task.title}" marked ${newCompleted ? "complete" : "incomplete"}`
       );
@@ -203,6 +212,11 @@ const StudentProjectsPage = () => {
         prev.map((p) =>
           p.id === project.id ? { ...p, tasks: [...p.tasks, newTask] } : p
         )
+      );
+
+      // Log activity
+      await logActivity(
+        `Added task "${taskTitle}" to project "${project.name}"`
       );
 
       toast.success("Task added!");

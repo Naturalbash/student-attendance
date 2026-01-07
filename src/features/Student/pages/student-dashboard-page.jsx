@@ -78,8 +78,18 @@ const StudentDashboardPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <SpinnerDotted size={40} color="#4f46e5" />
+      <div className="min-h-screen w-full flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4 animate-fade-in">
+          <SpinnerDotted
+            size={40}
+            thickness={100}
+            speed={100}
+            color="#4f46e5"
+          />
+          <p className="text-sm text-slate-500 animate-pulse">
+            Loading your dashboard...
+          </p>
+        </div>
       </div>
     );
   }
@@ -107,12 +117,11 @@ const StudentDashboardPage = () => {
 
   return (
     <main className="min-h-screen bg-slate-50 p-6 space-y-8">
-      {/* ✅ UPDATED WELCOME HEADER ONLY */}
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">
+        <h1 className="text-3xl font-bold mb-1 text-slate-900">
           Welcome back, {studentName} 👋
         </h1>
-        <p className="text-sm text-slate-500">
+        <p className="text-slate-500">
           Here’s a quick overview of your learning progress today.
         </p>
       </div>
@@ -141,7 +150,7 @@ const StudentDashboardPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* RECENT ACTIVITY */}
         <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-          <h3 className="text-base font-semibold text-slate-800 mb-4">
+          <h3 className="text-lg font-semibold text-slate-800 mb-4">
             Recent Activity
           </h3>
 

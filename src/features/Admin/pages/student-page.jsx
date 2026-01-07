@@ -258,8 +258,8 @@ const AdminStudentsPage = () => {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="animate-spin text-slate-400" />
+        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
         </div>
       ) : (
         <div className="overflow-x-auto rounded-2xl bg-white shadow">
