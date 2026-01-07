@@ -1,24 +1,20 @@
 import supabase from "./supabase";
 
-export async function ensureStudentData(userId) {
-  // Check if student exists
-  const { data: student, error: fetchError } = await supabase
-    .from("students")
+export const ensureStudentData = async (user) => {
+  if (!user) return;
+
+  const { data: profile } = await supabase
+    .from("profiles")
     .select("id")
-    .eq("id", userId)
+    .eq("id", user.id)
     .single();
 
-  if (student) return; // Already exists
-
-  if (fetchError && fetchError.code !== "PGRST116") {
-    throw fetchError;
+  if (!profile) {
+    await supabase.from("profiles").insert({
+      id: user.id,
+      full_name: user.user_metadata?.full_name || "Student",
+      email: user.email,
+      role: "student",
+    });
   }
-
-  // Create student record
-  const { error: insertError } = await supabase.from("students").insert({
-    id: userId,
-    enrolled_at: new Date().toISOString(),
-  });
-
-  if (insertError) throw insertError;
-}
+};

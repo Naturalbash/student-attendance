@@ -4,9 +4,7 @@ import { BookOpen, CheckCircle, PlayCircle, Loader2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
-/* =========================
-   CONGRATS MODAL
-========================= */
+/* ========================= CONGRATS MODAL ========================= */
 const CongratsModal = ({ open, courseTitle, onClose }) => {
   return (
     <AnimatePresence>
@@ -44,18 +42,14 @@ const CongratsModal = ({ open, courseTitle, onClose }) => {
   );
 };
 
-/* =========================
-   MAIN PAGE
-========================= */
+/* ========================= MAIN PAGE ========================= */
 const MyCoursesPage = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [completedCourse, setCompletedCourse] = useState(null);
   const [search, setSearch] = useState("");
 
-  /* =========================
-     FETCH COURSES + SYLLABUS
-  ========================= */
+  /* ========================= FETCH COURSES + SYLLABUS + PROGRESS ========================= */
   const fetchCourses = async () => {
     setLoading(true);
     try {
@@ -66,7 +60,6 @@ const MyCoursesPage = () => {
         .from("student_courses")
         .select("*")
         .eq("student_id", auth.user.id);
-
       if (scErr) throw scErr;
 
       const enriched = await Promise.all(
@@ -104,9 +97,7 @@ const MyCoursesPage = () => {
             student_course_id: sc.id,
             course_id: courseInfo.id,
             name: courseInfo.name,
-            description:
-              courseInfo.description ||
-              "No description available for this course.",
+            description: courseInfo.description || "No description available",
             syllabus: mergedSyllabus,
             progress,
           };
@@ -124,11 +115,33 @@ const MyCoursesPage = () => {
 
   useEffect(() => {
     fetchCourses();
+
+    /* REALTIME SYNC + ACTIVITY LOGGING */
+    const setupRealtime = async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth?.user) return;
+
+      const channel = supabase
+        .channel("student-courses")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "student_course_syllabus" },
+          fetchCourses
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "activity_logs" },
+          fetchCourses
+        )
+        .subscribe();
+
+      return () => supabase.removeChannel(channel);
+    };
+
+    setupRealtime();
   }, []);
 
-  /* =========================
-     TOGGLE SYLLABUS COMPLETION
-  ========================= */
+  /* ========================= TOGGLE SYLLABUS COMPLETION ========================= */
   const toggleSyllabus = async (course, syllabusItem) => {
     try {
       const { data: auth } = await supabase.auth.getUser();
@@ -136,6 +149,7 @@ const MyCoursesPage = () => {
 
       const newCompleted = !syllabusItem.completed;
 
+      // Upsert completion
       await supabase.from("student_course_syllabus").upsert({
         student_id: auth.user.id,
         course_id: course.course_id,
@@ -143,6 +157,7 @@ const MyCoursesPage = () => {
         completed: newCompleted,
       });
 
+      // Update progress
       const updatedSyllabus = course.syllabus.map((s) =>
         s.id === syllabusItem.id ? { ...s, completed: newCompleted } : s
       );
@@ -164,6 +179,14 @@ const MyCoursesPage = () => {
         )
       );
 
+      // Log activity
+      await supabase.from("activity_logs").insert({
+        student_id: auth.user.id,
+        action: `${syllabusItem.title} marked ${
+          newCompleted ? "complete" : "incomplete"
+        }`,
+      });
+
       toast.success(
         `"${syllabusItem.title}" marked ${
           newCompleted ? "complete" : "incomplete"
@@ -177,27 +200,25 @@ const MyCoursesPage = () => {
     }
   };
 
-  /* =========================
-     MOVE TO NEXT SYLLABUS (CTA)
-  ========================= */
+  /* ========================= COMPLETE NEXT MODULE ========================= */
   const completeNextModule = (course) => {
     const nextModule = course.syllabus.find((s) => !s.completed);
     if (nextModule) toggleSyllabus(course, nextModule);
     else toast.success("All modules completed!");
   };
 
-  /* =========================
-     FILTER COURSES
-  ========================= */
-  const filteredCourses = courses.filter(
-    (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.description.toLowerCase().includes(search.toLowerCase())
-  );
+  /* ========================= SEARCH FILTER ========================= */
+  const filteredCourses = courses.filter((c) => {
+    const name = c.name || "";
+    const description = c.description || "";
+    const searchText = (search || "").toLowerCase();
+    return (
+      name.toLowerCase().includes(searchText) ||
+      description.toLowerCase().includes(searchText)
+    );
+  });
 
-  /* =========================
-     RENDER
-  ========================= */
+  /* ========================= RENDER ========================= */
   return (
     <main className="min-h-screen bg-slate-50 p-8">
       <Toaster position="top-right" />
@@ -277,18 +298,15 @@ const MyCoursesPage = () => {
                     return (
                       <motion.li
                         key={s.id}
-                        className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition
-                ${
-                  s.completed
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "bg-slate-50 hover:bg-slate-100"
-                }
-                ${
-                  isNext && !s.completed
-                    ? "border border-indigo-300 shadow-sm"
-                    : ""
-                }
-              `}
+                        className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition ${
+                          s.completed
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-slate-50 hover:bg-slate-100"
+                        } ${
+                          isNext && !s.completed
+                            ? "border border-indigo-300 shadow-sm"
+                            : ""
+                        }`}
                         onClick={() => toggleSyllabus(course, s)}
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
