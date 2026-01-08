@@ -3,26 +3,56 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { Link } from "react-router-dom";
 import { BadgeCheck } from "lucide-react";
+import supabase from "../../../../utils/supabase";
 
 export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState(null);
 
   const schema = Yup.object().shape({
     email: Yup.string().email("Invalid email").required("Email is required"),
     role: Yup.string().oneOf(["admin", "student"]).required("Select a role"),
   });
 
-  const handleSubmit = (values, { setSubmitting }) => {
+  const handleSubmit = async (values, { setSubmitting }) => {
     setLoading(true);
     setSent(false);
+    setError(null);
 
-    // Replace with real API call when available.
-    setTimeout(() => {
+    try {
+      // Check if profile exists with the given email and role
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("email", values.email)
+        .eq("role", values.role)
+        .single();
+
+      if (profileError || !profile) {
+        setError("No account found with this email and role.");
+        setLoading(false);
+        setSubmitting(false);
+        return;
+      }
+
+      // Send password reset email
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        values.email
+      );
+
+      if (resetError) {
+        setError("Failed to send reset email. Please try again.");
+      } else {
+        setSent(true);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong. Please try again.");
+    } finally {
       setLoading(false);
       setSubmitting(false);
-      setSent(true);
-    }, 1000);
+    }
   };
 
   return (
@@ -53,6 +83,12 @@ export default function ForgotPassword() {
                   <h3 className="text-lg font-semibold mb-4 text-gray-800">
                     Reset your password
                   </h3>
+
+                  {error && (
+                    <p className="bg-red-100 text-red-600 p-2 rounded text-sm mb-4">
+                      {error}
+                    </p>
+                  )}
 
                   <div className="mb-3">
                     <Field
