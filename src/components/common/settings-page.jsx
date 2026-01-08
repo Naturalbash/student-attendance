@@ -25,9 +25,6 @@ const AdminSettingsPage = () => {
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
 
-  /* ==========================
-     LOAD PROFILE
-  ========================== */
   useEffect(() => {
     const loadProfile = async () => {
       const {
@@ -58,9 +55,6 @@ const AdminSettingsPage = () => {
     loadProfile();
   }, []);
 
-  /* ==========================
-     SAVE PROFILE
-  ========================== */
   const handleProfileSave = async () => {
     if (!profile.name.trim()) {
       toast.error("Full name is required");
@@ -70,7 +64,6 @@ const AdminSettingsPage = () => {
     setSavingProfile(true);
     const toastId = toast.loading("Saving profile...");
 
-    /* Update profile table */
     const { error: profileError } = await supabase
       .from("profiles")
       .update({
@@ -79,7 +72,6 @@ const AdminSettingsPage = () => {
       })
       .eq("id", userId);
 
-    /* Update auth email if changed */
     const { error: authError } =
       profile.email &&
       (await supabase.auth.updateUser({
@@ -97,9 +89,6 @@ const AdminSettingsPage = () => {
     setSavingProfile(false);
   };
 
-  /* ==========================
-     CHANGE PASSWORD
-  ========================== */
   const handlePasswordSave = async () => {
     if (password.new.length < 6) {
       toast.error("Password must be at least 6 characters");
@@ -130,9 +119,6 @@ const AdminSettingsPage = () => {
     setSavingPassword(false);
   };
 
-  /* ==========================
-     NOTIFICATIONS (LOCAL ONLY)
-  ========================== */
   const handleNotificationChange = (updated) => {
     setNotifications(updated);
     toast.success("Notification settings saved");
@@ -140,7 +126,6 @@ const AdminSettingsPage = () => {
 
   return (
     <main className="min-h-screen w-full bg-slate-50 p-6 space-y-6">
-      {/* HEADER */}
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">
           Admin Settings

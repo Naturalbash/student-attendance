@@ -1,4 +1,4 @@
-import supabase from "../../../../utils/supabase";
+import supabase from "../../../../../utils/supabase";
 
 export const logActivity = async (action) => {
   const {

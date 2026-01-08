@@ -1,4 +1,4 @@
-import supabase from "../../../../utils/supabase";
+import supabase from "../../../../../utils/supabase";
 
 export const logActivity = async (action) => {
   const {
@@ -20,14 +20,26 @@ export const fetchCourses = async () => {
 
   if (error) throw error;
 
-  const { data: studentCourses } = await supabase
+  // Get student counts for all courses in a single query
+  const { data: studentCounts, error: countError } = await supabase
     .from("student_courses")
-    .select("course_id");
+    .select("course_id")
+    .in(
+      "course_id",
+      coursesData.map((c) => c.id)
+    );
+
+  if (countError) throw countError;
+
+  // Create a count map for efficient lookup
+  const countMap = new Map();
+  studentCounts?.forEach((sc) => {
+    countMap.set(sc.course_id, (countMap.get(sc.course_id) || 0) + 1);
+  });
 
   const formatted = coursesData.map((c) => ({
     ...c,
-    students:
-      studentCourses?.filter((sc) => sc.course_id === c.id)?.length || 0,
+    students: countMap.get(c.id) || 0,
   }));
 
   return formatted;
@@ -67,6 +79,23 @@ export const updateCourse = async (id, name, description) => {
 };
 
 export const deleteCourse = async (id, name) => {
+  // First delete related syllabus topics
+  const { error: syllabusError } = await supabase
+    .from("course_syllabus")
+    .delete()
+    .eq("course_id", id);
+
+  if (syllabusError) throw syllabusError;
+
+  // Then delete related student_courses
+  const { error: studentError } = await supabase
+    .from("student_courses")
+    .delete()
+    .eq("course_id", id);
+
+  if (studentError) throw studentError;
+
+  // Then delete the course
   const { error } = await supabase.from("courses").delete().eq("id", id);
 
   if (error) throw error;

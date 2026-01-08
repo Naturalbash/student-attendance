@@ -1,3 +1,5 @@
+import { Search } from "lucide-react";
+
 export default function Header({ search, setSearch }) {
   return (
     <div className="flex flex-col sm:flex-row sm:justify-between gap-4 items-center">

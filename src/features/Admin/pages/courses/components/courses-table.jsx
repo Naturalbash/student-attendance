@@ -1,3 +1,5 @@
+import { Save, X, Edit, ChevronDown, Users } from "lucide-react";
+
 export default function CoursesTable({
   loading,
   filteredCourses,

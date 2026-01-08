@@ -13,21 +13,21 @@ import ForgotPassword from "./src/features/auth/pages/forgot-password";
 import ConfirmEmail from "./src/features/auth/pages/confirm";
 import ResetPassword from "./src/features/auth/pages/reset-password";
 
+import SettingsPage from "./src/components/common/settings-page";
+
 /* Admin */
 import AdminAppLayout from "./src/features/Admin/layouts/layout";
 import AdminDashboard from "./src/features/Admin/pages/dashboard";
-import AdminStudentsPage from "@/features/Admin/pages/student-page";
-import AttendancePage from "./src/features/Admin/pages/attendance-page";
-import CoursesPage from "./src/features/Admin/pages/courses-page";
-
-import SettingsPage from "./src/components/common/settings-page";
+import AdminStudentsPage from "./src/features/Admin/pages/students";
+import AttendancePage from "./src/features/Admin/pages/attendance";
+import CoursesPage from "./src/features/Admin/pages/courses";
 
 /*Student*/
 import StudentAppLayout from "./src/features/Student/layouts/layout";
-import StudentDashboardPage from "./src/features/Student/pages/student-dashboard-page";
-import StudentAttendancePage from "./src/features/Student/pages/attendance-page";
-import MyCoursesPage from "./src/features/Student/pages/courses-page";
-import MyProjectsPage from "./src/features/Student/pages/projects-page";
+import StudentDashboardPage from "./src/features/Student/pages/dashboard";
+import StudentAttendancePage from "./src/features/Student/pages/attendance";
+import MyCoursesPage from "./src/features/Student/pages/courses";
+import MyProjectsPage from "./src/features/Student/pages/projects";
 
 function App() {
   return (

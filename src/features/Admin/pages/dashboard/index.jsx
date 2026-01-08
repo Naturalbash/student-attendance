@@ -5,6 +5,8 @@ import { Users, CheckCircle, XCircle, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { fetchDashboardData } from "./utils/fetchDashboardData";
 import SystemStatus from "./components/system-status";
+import RecentActivity from "./components/recent-activity";
+import StatCard from "./components/stat-card";
 
 const AdminDashboardPage = () => {
   const [stats, setStats] = useState({
@@ -106,8 +108,8 @@ const AdminDashboardPage = () => {
         <div className="lg:col-span-2">
           <RecentActivity activities={activities} />
         </div>
+        <SystemStatus systemStatus={systemStatus} />
       </div>
-      <SystemStatus systemStatus={systemStatus} />
     </main>
   );
 };

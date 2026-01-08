@@ -21,6 +21,8 @@ import {
 import Header from "./components/header";
 import AddCourse from "./components/add-course";
 import CoursesTable from "./components/courses-table";
+import ConfirmModal from "./components/confirm-modal";
+import SearchField from "../attendance/components/search-field";
 
 const CoursesPage = () => {
   const [courses, setCourses] = useState([]);
@@ -38,6 +40,7 @@ const CoursesPage = () => {
   const [newSyllabus, setNewSyllabus] = useState("");
 
   const [loading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const loadCourses = async () => {
     setLoading(true);
@@ -70,8 +73,8 @@ const CoursesPage = () => {
     }
 
     try {
-      const newCourse = await addCourse(newCourseName, newCourseDescription);
-      setCourses([newCourse, ...courses]);
+      await addCourse(newCourseName, newCourseDescription);
+      await loadCourses();
       setNewCourseName("");
       setNewCourseDescription("");
       toast.success("Course created successfully");
@@ -97,16 +100,8 @@ const CoursesPage = () => {
     }
 
     try {
-      const updatedCourse = await updateCourse(
-        editingId,
-        editName,
-        editDescription
-      );
-      setCourses(
-        courses.map((c) =>
-          c.id === editingId ? { ...c, ...updatedCourse } : c
-        )
-      );
+      await updateCourse(editingId, editName, editDescription);
+      await loadCourses();
       toast.success("Course updated");
       setEditingId(null);
       setEditName("");
@@ -126,13 +121,18 @@ const CoursesPage = () => {
   /* =======================
      DELETE COURSE
   ======================= */
-  const handleDelete = async (course) => {
-    if (!window.confirm(`Delete "${course.name}"?`)) return;
+  const handleDelete = (course) => {
+    setDeleteTarget(course);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
 
     try {
-      await deleteCourse(course.id, course.name);
-      setCourses(courses.filter((c) => c.id !== course.id));
+      await deleteCourse(deleteTarget.id, deleteTarget.name);
+      await loadCourses(); // Reload to ensure accurate student counts
       toast.success("Course deleted");
+      setDeleteTarget(null);
     } catch (error) {
       console.error("Failed to delete course:", error);
       toast.error("Failed to delete course");
@@ -192,7 +192,7 @@ const CoursesPage = () => {
 
   return (
     <main className="min-h-screen bg-slate-50 p-6 space-y-6">
-      <Toaster position="top-right" />
+      <Toaster position="top-right" reverseOrder={false} />
 
       {/* HEADER */}
       <Header search={search} setSearch={setSearch} />
@@ -222,6 +222,14 @@ const CoursesPage = () => {
         setNewSyllabus={setNewSyllabus}
         addSyllabus={addSyllabus}
         renderSkeleton={renderSkeleton}
+      />
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Delete Course"
+        message={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+        onConfirm={confirmDelete}
+        onClose={() => setDeleteTarget(null)}
       />
     </main>
   );

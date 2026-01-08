@@ -1,3 +1,5 @@
+import { PlusCircle } from "lucide-react";
+
 export default function AddCourse({
   newCourseName,
   setNewCourseName,
