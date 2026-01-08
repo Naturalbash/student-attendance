@@ -15,7 +15,7 @@ import ResetPassword from "./src/features/auth/pages/reset-password";
 
 /* Admin */
 import AdminAppLayout from "./src/features/Admin/layouts/layout";
-import AdminDashboard from "./src/features/Admin/pages/dashboard-page";
+import AdminDashboard from "./src/features/Admin/pages/dashboard";
 import AdminStudentsPage from "@/features/Admin/pages/student-page";
 import AttendancePage from "./src/features/Admin/pages/attendance-page";
 import CoursesPage from "./src/features/Admin/pages/courses-page";
