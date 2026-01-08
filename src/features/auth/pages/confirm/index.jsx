@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Loader } from "lucide-react";
 import supabase from "../../../../utils/supabase";
 
 const ConfirmEmail = () => {
@@ -14,7 +15,6 @@ const ConfirmEmail = () => {
         return;
       }
 
-      // Email is now confirmed
       navigate("/auth/sign-in", { replace: true });
     };
 
@@ -23,7 +23,10 @@ const ConfirmEmail = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <p className="text-lg font-medium">Confirming your email...</p>
+      <p className="text-lg font-medium">
+        Confirming your email...
+        <Loader className="animate-spin inline ml-2" size={20} />
+      </p>
     </div>
   );
 };
