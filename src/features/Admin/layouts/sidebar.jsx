@@ -7,8 +7,9 @@ import {
   FaSignOutAlt,
   FaUserGraduate,
 } from "react-icons/fa";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import LogoutModal from "../../../components/common/logout-modal";
+import supabase from "../../../utils/supabase";
 
 const navLinks = [
   {
@@ -35,15 +36,25 @@ const navLinks = [
 
 export default function Sidebar({ collapsed, closeSidebar }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const handleLogout = async () => {
     setLogoutOpen(false);
-    await fetch("/api/auth/logout", {
-      method: "POST",
-      credentials: "same-origin",
-    });
-    window.location.href = "/auth/sign-in";
+    setLoggingOut(true);
+
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Sidebar logout error:", error.message);
+      }
+    } catch (err) {
+      console.error("Unexpected sidebar logout error:", err);
+    } finally {
+      navigate("/auth/sign-in", { replace: true });
+      setLoggingOut(false);
+    }
   };
 
   return (
@@ -110,11 +121,15 @@ export default function Sidebar({ collapsed, closeSidebar }) {
 
           <button
             onClick={() => setLogoutOpen(true)}
-            className={`flex items-center gap-2 w-full rounded-lg p-2 text-red-600 hover:bg-red-50 transition-colors ${
+            disabled={loggingOut}
+            className={`flex items-center gap-2 w-full rounded-lg p-2 text-red-600 hover:bg-red-50 transition-colors disabled:cursor-not-allowed disabled:opacity-70 ${
               collapsed ? "justify-center" : ""
             }`}
           >
-            <FaSignOutAlt className="h-4 w-4" /> {!collapsed && "Logout"}
+            <FaSignOutAlt
+              className={`h-4 w-4 ${loggingOut ? "animate-pulse" : ""}`}
+            />{" "}
+            {!collapsed && (loggingOut ? "Signing out..." : "Logout")}
           </button>
         </div>
       </nav>
