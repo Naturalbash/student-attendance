@@ -76,13 +76,13 @@ const AdminStudentsPage = () => {
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />
-      <main className="min-h-screen bg-slate-50 p-6">
-        <div className="flex justify-between items-center mb-6">
+      <main className="min-h-screen bg-slate-50 p-4 sm:p-6">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-2xl font-semibold">Students</h1>
 
           <button
             onClick={() => setModalOpen(true)}
-            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-white hover:bg-indigo-700 shadow"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-white shadow transition hover:bg-indigo-700 sm:w-auto"
           >
             <Plus size={18} /> Add Student
           </button>

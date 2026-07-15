@@ -127,9 +127,7 @@ const AdminSettingsPage = () => {
   return (
     <main className="min-h-screen w-full bg-slate-50 p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">
-          Admin Settings
-        </h1>
+        <h1 className="text-3xl font-semibold text-slate-900">ASettings</h1>
         <p className="text-sm text-slate-500">
           Manage your profile and security settings
         </p>
