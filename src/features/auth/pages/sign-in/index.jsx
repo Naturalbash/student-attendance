@@ -2,7 +2,10 @@ import { useState } from "react";
 import { BadgeCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import supabase from "../../../../utils/supabase";
-import { ensureProfileExists } from "../../../../utils/auth";
+import {
+  ensureProfileExists,
+  getFriendlyAuthError,
+} from "../../../../utils/auth";
 import Form from "./components/form";
 
 const SignIn = () => {
@@ -17,10 +20,12 @@ const SignIn = () => {
   const togglePasswordVisibility = () => setPasswordVisible((prev) => !prev);
 
   const validateForm = () => {
-    if (!email.trim()) return "Email is required";
-    if (!/^\S+@\S+\.\S+$/.test(email)) return "Invalid email";
-    if (!password.trim()) return "Password is required";
-    if (password.length < 6) return "Password too short";
+    if (!email.trim()) return "Please enter your email address.";
+    if (!/^\S+@\S+\.\S+$/.test(email))
+      return "Please enter a valid email address.";
+    if (!password.trim()) return "Please enter your password.";
+    if (password.length < 6)
+      return "Please use at least 6 characters for your password.";
     return null;
   };
 
@@ -44,13 +49,18 @@ const SignIn = () => {
         });
 
       if (signInError) {
-        setError("Something went wrong with the server");
+        setError(
+          getFriendlyAuthError(
+            signInError,
+            "We couldn’t sign you in right now. Please try again.",
+          ),
+        );
         return;
       }
 
       const user = data.user;
       if (!user) {
-        setError("Authentication failed. Have you confirmed your email?");
+        setError("We couldn’t find an active account for that email address.");
         return;
       }
 
@@ -58,7 +68,9 @@ const SignIn = () => {
       const profile = await ensureProfileExists(user);
 
       if (!profile) {
-        setError("User does not exist");
+        setError(
+          "We couldn’t complete your sign-in right now. Please try again.",
+        );
         return;
       }
 
@@ -70,7 +82,9 @@ const SignIn = () => {
       }
     } catch (err) {
       console.error(err);
-      setError("Something went wrong. Please try again.");
+      setError(
+        "We couldn’t complete your sign-in right now. Please try again.",
+      );
     } finally {
       setLoading(false);
     }

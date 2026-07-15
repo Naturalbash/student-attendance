@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import supabase from "../../../../utils/supabase";
+import { getFriendlyAuthError } from "../../../../utils/auth";
 import ResetUnsuccessful from "./components/unsuccessful-reset";
 
 const ResetPassword = () => {
@@ -31,12 +32,12 @@ const ResetPassword = () => {
     setError(null);
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError("Please make sure both passwords match.");
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+      setError("Please use at least 6 characters for your password.");
       return;
     }
 
@@ -46,7 +47,12 @@ const ResetPassword = () => {
       const { error } = await supabase.auth.updateUser({ password });
 
       if (error) {
-        setError("Failed to update password. Please try again.");
+        setError(
+          getFriendlyAuthError(
+            error,
+            "We couldn’t update your password right now. Please try again.",
+          ),
+        );
       } else {
         setSuccess(true);
         setTimeout(() => {
@@ -55,7 +61,7 @@ const ResetPassword = () => {
       }
     } catch (err) {
       console.error(err);
-      setError("Something went wrong. Please try again.");
+      setError("We couldn’t update your password right now. Please try again.");
     } finally {
       setLoading(false);
     }

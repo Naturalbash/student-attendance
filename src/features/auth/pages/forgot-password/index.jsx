@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { BadgeCheck } from "lucide-react";
 import supabase from "../../../../utils/supabase";
+import { getFriendlyAuthError } from "../../../../utils/auth";
 import ForgotReset from "./components/forgot-reset";
 import ConfirmEmail from "./components/email-confirmation";
 
@@ -24,7 +25,7 @@ export default function ForgotPassword() {
         .single();
 
       if (profileError || !profile) {
-        setError("No account found with this email and role.");
+        setError("We couldn’t find an account matching that email and role.");
         setLoading(false);
         setSubmitting(false);
         return;
@@ -32,17 +33,24 @@ export default function ForgotPassword() {
 
       // Send password reset email
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-        values.email
+        values.email,
       );
 
       if (resetError) {
-        setError("Failed to send reset email. Please try again.");
+        setError(
+          getFriendlyAuthError(
+            resetError,
+            "We couldn’t send the reset link right now. Please try again.",
+          ),
+        );
       } else {
         setSent(true);
       }
     } catch (err) {
       console.error(err);
-      setError("Something went wrong. Please try again.");
+      setError(
+        "We couldn’t complete that request right now. Please try again.",
+      );
     } finally {
       setLoading(false);
       setSubmitting(false);

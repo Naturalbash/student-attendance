@@ -1,3 +1,5 @@
+import { AlertCircle } from "lucide-react";
+
 export default function ResetUnsuccessful({
   error,
   handleSubmit,
@@ -13,9 +15,15 @@ export default function ResetUnsuccessful({
         Reset Your Password
       </h2>
       {error && (
-        <p className="bg-red-100 text-red-600 p-2 rounded text-sm mb-4">
-          {error}
-        </p>
+        <div
+          role="alert"
+          className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-700"
+        >
+          <div className="flex items-start gap-2">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        </div>
       )}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input

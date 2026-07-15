@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { BadgeCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import signUpAndCreateProfile from "../../../../utils/auth";
+import signUpAndCreateProfile, {
+  getFriendlyAuthError,
+} from "../../../../utils/auth";
 import toast from "react-hot-toast";
 import Form from "./components/form";
 
@@ -21,12 +23,12 @@ export default function SignUp() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (!name.trim()) return toast.error("Enter your full name");
-    if (!email) return toast.error("Enter your email");
+    if (!name.trim()) return toast.error("Please enter your full name.");
+    if (!email) return toast.error("Please enter your email address.");
     if (password.length < 6)
-      return toast.error("Password must be at least 6 characters");
+      return toast.error("Please use at least 6 characters for your password.");
     if (password !== confirmPassword)
-      return toast.error("Passwords do not match");
+      return toast.error("Please make sure both passwords match.");
 
     setLoading(true);
 
@@ -39,7 +41,12 @@ export default function SignUp() {
       });
 
       if (error) {
-        toast.error(error.message);
+        toast.error(
+          getFriendlyAuthError(
+            error,
+            "We couldn’t create your account right now. Please try again.",
+          ),
+        );
         return;
       }
 
@@ -57,7 +64,9 @@ export default function SignUp() {
       }
     } catch (err) {
       console.error(err);
-      toast.error("Something went wrong");
+      toast.error(
+        "We couldn’t create your account right now. Please try again.",
+      );
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { SignInButton } from "./sign-in-btn";
 
+import { AlertCircle } from "lucide-react";
 import { FaEye } from "react-icons/fa";
 import { IoMdEyeOff } from "react-icons/io";
 
@@ -18,7 +19,15 @@ export default function Form({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
       {error && (
-        <p className="bg-red-100 text-red-600 p-2 rounded text-sm">{error}</p>
+        <div
+          role="alert"
+          className="rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-700"
+        >
+          <div className="flex items-start gap-2">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        </div>
       )}
 
       <input

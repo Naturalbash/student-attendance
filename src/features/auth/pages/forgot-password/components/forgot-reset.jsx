@@ -1,5 +1,6 @@
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
+import { AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function ForgotReset({ handleSubmit, loading, error }) {
@@ -20,9 +21,15 @@ export default function ForgotReset({ handleSubmit, loading, error }) {
           </h3>
 
           {error && (
-            <p className="bg-red-100 text-red-600 p-2 rounded text-sm mb-4">
-              {error}
-            </p>
+            <div
+              role="alert"
+              className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-700"
+            >
+              <div className="flex items-start gap-2">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            </div>
           )}
 
           <div className="mb-3">
