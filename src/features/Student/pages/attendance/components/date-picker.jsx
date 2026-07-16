@@ -7,7 +7,7 @@ const DatePicker = ({ value, onChange }) => (
       type="date"
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded-xl border px-4 py-2 text-sm"
+      className="rounded-xl border px-3 py-2 text-sm"
     />
   </div>
 );
